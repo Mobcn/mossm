@@ -5,7 +5,8 @@
         "#db": "./dao/database/db.js",
         "#dao/*": "./dao/*",
         "#service/*": "./service/*",
-        "#controller/*": "./controller/*"
+        "#controller/*": "./controller/*",
+        "#utils/*": "./utils/*"
     },
     "dependencies": {
         "jsonwebtoken": "^9.0.2",

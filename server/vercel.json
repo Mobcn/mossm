@@ -44,6 +44,11 @@
             "source": "/handler/(.*)",
             "destination": "/",
             "permanent": true
+        },
+        {
+            "source": "/utils/(.*)",
+            "destination": "/",
+            "permanent": true
         }
     ]
 }
