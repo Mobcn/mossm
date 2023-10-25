@@ -58,7 +58,8 @@ export default function handler(request, response) {
                     return;
                 }
                 const { name, property, table } = findModel;
-                const Model = mongoose.models[name] || mongoose.model(name, new mongoose.Schema(property), table);
+                const tableName = (module + '_' + table).toLowerCase();
+                const Model = mongoose.models[name] || mongoose.model(name, new mongoose.Schema(property), tableName);
                 const preHander = eval('(Model, Result) => ' + findApi.handler)(Model, Result);
                 const { method: methods, authorized } = findApi;
                 const secretKey = authorized ? findModule.secretKey : undefined;
