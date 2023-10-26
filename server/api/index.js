@@ -13,6 +13,7 @@ import { moduleService } from '#service/mossm/ModuleService.js';
  * @type {{ [path: string]: () => Promise<{ default: VercelHandler }> }}
  */
 const router = {
+    '/mossm/chsetting': () => import('#controller/mossm/chsetting.js'),
     '/mossm/login': () => import('#controller/mossm/login.js'),
     '/mossm/api/all': () => import('#controller/mossm/api/all.js'),
     '/mossm/api/remove': () => import('#controller/mossm/api/remove.js'),
