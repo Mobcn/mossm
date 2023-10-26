@@ -12,19 +12,23 @@ export default VHandler.buildPOST(
      * @param {import('#handler').VercelRequest} request
      */
     async ({ username, password }, request) => {
+        if (!process.env.JWT_SECRET_KEY) {
+            throw new Error('缺少环境变量`JWT_SECRET_KEY`');
+        }
         let resultToken;
         const authorization = request.headers['authorization'];
         if (authorization?.startsWith('Bearer ')) {
             const token = authorization.replace('Bearer ', '');
             try {
-                JWT.verify(token);
+                JWT.verify(token, process.env.JWT_SECRET_KEY);
                 resultToken = token;
             } catch (error) {
                 if (error.name === 'TokenExpiredError') {
                     const expiredTime = Date.now() - error.expiredAt.getTime();
                     // 过期时间小于7天则刷新token
                     if (expiredTime < 7 * 24 * 60 * 60 * 1000) {
-                        resultToken = JWT.sign(JWT.verify(token, true));
+                        const data = JWT.verify(token, process.env.JWT_SECRET_KEY, true);
+                        resultToken = JWT.sign(data, process.env.JWT_SECRET_KEY);
                     }
                 }
             }
@@ -47,9 +51,6 @@ export default VHandler.buildPOST(
             const pass = await settingService.getSetting('password');
             if (username !== name || password !== pass) {
                 throw new Error('用户名或密码错误!');
-            }
-            if (!process.env.JWT_SECRET_KEY) {
-                throw new Error('缺少环境变量`JWT_SECRET_KEY`');
             }
             resultToken = JWT.sign({}, process.env.JWT_SECRET_KEY);
         }
