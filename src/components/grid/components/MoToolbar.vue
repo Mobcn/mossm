@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import MoIcon from '@/components/icons/MoIcon.vue';
+
 /** 参数 */
 const props = defineProps<MoToolbarProps>();
 

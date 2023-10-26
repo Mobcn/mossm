@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MoGrid from '@/components/grid/MoGrid.vue';
 import MoCodeEditor from './components/MoCodeEditor.vue';
 import type { MoGridProps } from '@/components/grid/MoGrid.vue';
 import type { API, SaveAPI, UpdateAPI } from '@/api/api-service';

@@ -6,7 +6,7 @@ const refreshURL = '/mossm/login';
 
 // 创建一个fetch服务实例
 const service = FetchService.create({
-    baseURL: 'http://localhost:5173',
+    baseURL: 'https://mossm.mobingc.cn',
     // timeout: 10000
 });
 

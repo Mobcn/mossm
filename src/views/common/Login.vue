@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MoIcon from '@/components/icons/MoIcon.vue';
 import { ElMessage } from 'element-plus';
 import type { FormInstance } from 'element-plus';
 import type { ProvideChangePage } from '@/App.vue';

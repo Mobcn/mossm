@@ -1,4 +1,9 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
+import MoSearch from './components/MoSearch.vue';
+import MoToolbar from './components/MoToolbar.vue';
+import MoTable from './components/MoTable.vue';
+import MoPagination from './components/MoPagination.vue';
+import MoEditDialog from './components/MoEditDialog.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { MoSearchProps, SearchData } from './components/MoSearch.vue';
 import type { MoToolbarProps } from './components/MoToolbar.vue';

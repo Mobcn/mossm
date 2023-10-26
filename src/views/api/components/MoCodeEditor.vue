@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MonacoEditor from '@/components/editor/MonacoEditor.vue';
 import type { ModelItem } from '../MoAPI.vue';
 import type { EditorOptions, MonacoEditorInstance } from '@/components/editor/MonacoEditor.vue';
 

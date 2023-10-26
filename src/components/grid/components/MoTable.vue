@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T">
+import MoIcon from '@/components/icons/MoIcon.vue';
 import type { ElTable } from 'element-plus';
 
 /** 参数 */

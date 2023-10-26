@@ -3,11 +3,17 @@ import vue from '@vitejs/plugin-vue';
 import { createStyleImportPlugin, VxeTableResolve } from 'vite-plugin-style-import';
 import Unocss from 'unocss/vite';
 import AutoImport from 'unplugin-auto-import/vite';
-import Components from 'unplugin-vue-components/vite';
 import { Plugin as importToCDN } from 'vite-plugin-cdn-import';
+import externalGlobals from 'rollup-plugin-external-globals';
 import path from 'path';
 
 const { NODE_ENV, ...other } = process.env;
+
+const externalGlobalsObj = {
+    vue: 'Vue',
+    'vue-demi': 'VueDemi',
+    'element-plus': 'ElementPlus'
+};
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -21,15 +27,6 @@ export default defineConfig({
             resolves: [VxeTableResolve()]
         }),
         Unocss(),
-        AutoImport({
-            imports: ['vue'],
-            dirs: ['./src/api', './src/store', './src/utils'],
-            dts: './src/declare/auto-import.d.ts'
-        }),
-        Components({
-            dirs: ['./src/components'],
-            dts: './src/declare/auto-components.d.ts'
-        }),
         importToCDN({
             modules: [
                 // Vue
@@ -41,6 +38,11 @@ export default defineConfig({
                         // Normalize 样式重置
                         'https://cdn.staticfile.org/normalize/8.0.1/normalize.min.css'
                     ]
+                },
+                {
+                    name: 'vue-demi',
+                    var: 'VueDemi',
+                    path: 'https://registry.npmmirror.com/vue-demi/0.14.6/files/lib/index.iife.js'
                 },
 
                 // ElementPlus组件库
@@ -59,7 +61,17 @@ export default defineConfig({
                     path: 'https://cdn.staticfile.org/element-plus/2.3.14/locale/zh-cn.min.js'
                 }
             ]
-        })
+        }),
+        AutoImport({
+            imports: ['vue'],
+            dirs: ['./src/api', './src/store', './src/utils'],
+            dts: './src/declare/auto-import.d.ts'
+        }),
+        {
+            ...externalGlobals(externalGlobalsObj),
+            enforce: 'post',
+            apply: 'build'
+        }
     ],
     resolve: {
         alias: {
