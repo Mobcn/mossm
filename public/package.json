@@ -1,0 +1,16 @@
+{
+    "type": "module",
+    "imports": {
+        "#handler": "./handler/index.js",
+        "#db": "./dao/database/db.js",
+        "#dao/*": "./dao/*",
+        "#service/*": "./service/*",
+        "#controller/*": "./controller/*",
+        "#utils/*": "./utils/*"
+    },
+    "dependencies": {
+        "jsonwebtoken": "^9.0.2",
+        "mongoose": "^7.5.2",
+        "terser": "^5.22.0"
+    }
+}

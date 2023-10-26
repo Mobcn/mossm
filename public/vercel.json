@@ -1,0 +1,54 @@
+{
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                },
+                {
+                    "key": "Access-Control-Allow-Headers",
+                    "value": "content-type"
+                },
+                {
+                    "key": "Access-Control-Allow-Methods",
+                    "value": "DELETE,PUT,POST,GET,OPTIONS"
+                }
+            ]
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/api/index"
+        }
+    ],
+    "redirects": [
+        {
+            "source": "/controller/(.*)",
+            "destination": "/",
+            "permanent": true
+        },
+        {
+            "source": "/service/(.*)",
+            "destination": "/",
+            "permanent": true
+        },
+        {
+            "source": "/dao/(.*)",
+            "destination": "/",
+            "permanent": true
+        },
+        {
+            "source": "/handler/(.*)",
+            "destination": "/",
+            "permanent": true
+        },
+        {
+            "source": "/utils/(.*)",
+            "destination": "/",
+            "permanent": true
+        }
+    ]
+}
