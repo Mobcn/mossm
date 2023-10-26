@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { BaseService } from '#service/BaseService.js';
 import { modelDAO } from '#dao/mossm/ModelDAO.js';
 
@@ -10,6 +11,14 @@ import { modelDAO } from '#dao/mossm/ModelDAO.js';
  * @extends {BaseService<DAO, Model>}
  */
 class ModelService extends BaseService {
+    /**
+     * 获取apiDAO
+     */
+    static async getAPIDAO() {
+        const { apiDAO } = await import('#dao/mossm/APIDAO.js');
+        return apiDAO;
+    }
+
     /**
      * 获取moduleDAO
      */
@@ -44,34 +53,55 @@ class ModelService extends BaseService {
         if (findModel) {
             throw new Error('该模型已存在');
         }
-        const moduleDAO = await ModelService.getModuleDAO();
-        moduleDAO.get({ name: module }).then((findModule) => !findModule && moduleDAO.insert({ name: module }));
+        ModelService.getModuleDAO().then((moduleDAO) => moduleDAO.insert({ name: module }));
         return await this.DAO.insert({ module, name, table, property });
     }
 
     /**
-     * 删除主键ID对应的数据
+     * 删除主键ID对应的模型
      *
      * @param {any | any[]} id 主键ID
      */
     async removeById(id) {
-        const findModels = await this.DAO.list({ _id: { $in: id instanceof Array ? id : [id] } });
+        const inArr = id instanceof Array ? id : [id];
+
+        // 获取模型
+        const findModels = await this.DAO.list({ filter: { _id: { $in: inArr } } });
         if (findModels.length <= 0) {
             return { deletedCount: 0 };
         }
+
+        // 判断模型是否存在API
+        const apiDAO = await ModelService.getAPIDAO();
+        const isExistAPI = await apiDAO.exists({ model: { $in: findModels.map((item) => item.name) } });
+        if (isExistAPI) {
+            throw new Error(`${id instanceof Array ? '存在' : ''}模型已被使用，无法删除`);
+        }
+
+        // 删除模型
+        const result = await this.DAO.deleteById(findModels.map((item) => item._id));
+
+        // 删除模型对应的表
+        for (const { module, table } of findModels) {
+            const tableName = (module + '_' + table).toLowerCase();
+            mongoose.connection.db.dropCollection(tableName);
+        }
+        // 删除不存在模型的模块
         const modules = Array.from(new Set(findModels.map((item) => item.module)));
         const promiseList = modules.map(async (module) => {
             const isExist = await this.DAO.exists({ module });
             return [module, isExist];
         });
         Promise.all(promiseList).then(async (res) => {
+            console.log(res);
             const emptyModules = res.filter((item) => !item[1]).map((item) => item[0]);
             if (emptyModules.length > 0) {
                 const moduleDAO = await ModelService.getModuleDAO();
-                moduleDAO.deleteById(emptyModules);
+                moduleDAO.deleteByName(emptyModules);
             }
         });
-        return await this.DAO.deleteById(findModels.map((item) => item._id));
+
+        return result;
     }
 }
 

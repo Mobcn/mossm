@@ -57,7 +57,7 @@ class APIService extends BaseService {
             throw new Error('该接口已存在');
         }
         const handler = raw_handler ? (await minify(raw_handler)).code : undefined;
-        return await apiService.save({
+        return await this.DAO.insert({
             module,
             model,
             path,

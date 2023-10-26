@@ -34,11 +34,11 @@ class BaseDAO {
     /**
      * 获取所有数据
      *
-     * @param {Object} param0 参数
-     * @param {{ [key in keyof RawDocType<TModel>]: 1 | -1 }} [param0.sort={ create_time: -1 }] 排序
+     * @param {{ sort?: { [key in keyof RawDocType<TModel>]: 1 | -1 } }} params 参数
      * @returns {Promise<ResultDoc<TModel>[]>}
      */
-    async listAll({ sort = { create_time: -1 } }) {
+    async listAll(params) {
+        const { sort } = params || {};
         return await this.list({ sort });
     }
 

@@ -30,8 +30,21 @@ class ModuleDAO extends BaseDAO {
             const message = `非法的模块名[${name}], 模块名不能为moss, database, api, controller, service, dao, handler, utils, assets, declare, img`;
             throw new Error(message);
         }
+        const findModule = await moduleDAO.get({ name });
+        if (findModule) {
+            return findModule;
+        }
         secretKey ??= randomString();
-        return await this.DAO.insert({ name, secretKey });
+        return await super.insert({ name, secretKey });
+    }
+
+    /**
+     * 删除名称对应的数据
+     *
+     * @param {string | string[]} name 名称
+     */
+    async deleteByName(name) {
+        return await this.Model.deleteMany({ name: { $in: name instanceof Array ? name : [name] } });
     }
 }
 
