@@ -50,7 +50,7 @@ export default function handler(request, response) {
             DB.connect(),
             apiService.DAO.get({ module, model, path, status: true }),
             moduleService.getByName(module),
-            modelService.DAO.get({ module, model })
+            modelService.DAO.get({ module, name: model })
         ])
             .then(([_, findApi, findModule, findModel]) => {
                 if (!findApi || !findModule || !findModel) {
@@ -59,7 +59,8 @@ export default function handler(request, response) {
                 }
                 const { name, property, table } = findModel;
                 const tableName = (module + '_' + table).toLowerCase();
-                const Model = mongoose.models[name] || mongoose.model(name, new mongoose.Schema(property), tableName);
+                const schema = new mongoose.Schema(eval('(' + property + ')'));
+                const Model = mongoose.models[name] || mongoose.model(name, schema, tableName);
                 const preHander = eval('(Model, Result) => ' + findApi.handler)(Model, Result);
                 const { method: methods, authorized } = findApi;
                 const secretKey = authorized ? findModule.secretKey : undefined;
