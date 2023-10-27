@@ -6,8 +6,8 @@ const refreshURL = '/mossm/login';
 
 // 创建一个fetch服务实例
 const service = FetchService.create({
-    baseURL: 'https://mossm.mobingc.cn',
-    // timeout: 10000
+    baseURL: new URL(location.href).origin,
+    timeout: 10000
 });
 
 // 请求拦截器
