@@ -62,7 +62,7 @@ function exit() {
 
 <template>
     <div class="w-full h-full flex items-center justify-between">
-        <div class="text-xl mx-3">MOSSM</div>
+        <div class="text-xl mx-3 select-none">MOSSM</div>
         <div ref="divRef" class="flex items-center gap-1">
             <el-switch
                 v-model="themeSwitch"

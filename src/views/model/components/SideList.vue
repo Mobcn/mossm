@@ -86,6 +86,7 @@ const currentChangeEvent: VxeTableEvents.CurrentChange<TableInfo> = ({ newValue,
  * 加载模型列表
  */
 async function loadModel() {
+    emits('editProperty');
     setLoading(true);
     try {
         const modelList = await modelService.all();

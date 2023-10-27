@@ -84,6 +84,9 @@ const menuConfig = reactive<VxeTablePropTypes.MenuConfig<RowVO>>({
         ]
     },
     visibleMethod: ({ options, row }) => {
+        if (!property.value) {
+            return false;
+        }
         const $table = tableRef.value;
         if (!$table || !row) {
             options[0][1].visible = false;
@@ -147,7 +150,7 @@ function revert() {
 
 /**
  * 保存
- * 
+ *
  * @param data 数据
  */
 async function save(data?: RowVO[]) {

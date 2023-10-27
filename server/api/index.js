@@ -1,4 +1,4 @@
-import VHandler, { Result } from '#handler';
+import VHandler, { Result, JWT as _JWT } from '#handler';
 import mongoose from 'mongoose';
 import DB from '#db';
 import { apiService } from '#service/mossm/APIService.js';
@@ -62,7 +62,11 @@ export default function handler(request, response) {
                 const tableName = (module + '_' + table).toLowerCase();
                 const schema = new mongoose.Schema(eval('(' + property + ')'));
                 const Model = mongoose.models[name] || mongoose.model(name, schema, tableName);
-                const preHander = eval('(Model, Result) => ' + findApi.handler)(Model, Result);
+                const JWT = {
+                    sign: (data, expiresIn) => _JWT.sign(data, findModule.secretKey, expiresIn),
+                    verify: (token, ignoreExpiration) => _JWT.verify(token, findModule.secretKey, ignoreExpiration)
+                };
+                const preHander = eval('(Model, Result, JWT) => ' + findApi.handler)(Model, Result, JWT);
                 const { method: methods, authorized } = findApi;
                 const secretKey = authorized ? findModule.secretKey : undefined;
                 VHandler.config({ methods, secretKey }).build(preHander)(request, response);

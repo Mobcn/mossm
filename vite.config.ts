@@ -88,7 +88,7 @@ export default defineConfig({
     server: {
         proxy: {
             '/mossm': {
-                target: 'http://localhost:3000',
+                target: 'https://mossm.mobingc.cn',
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/api/, '')
             }

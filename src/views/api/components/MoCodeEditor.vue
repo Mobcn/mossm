@@ -50,7 +50,7 @@ onMounted(() => {
         const addExtraLib = buildAddExtraLib(languages);
         // 设置扩展类型定义
         loadFileText('/declare/mongoose.d.ts').then((content) => addExtraLib(content, 'mongoose.d.ts'));
-        loadFileText('/declare/result.d.ts').then((content) => addExtraLib(content, 'result.d.ts'));
+        loadFileText('/declare/global.d.ts').then((content) => addExtraLib(content, 'global.d.ts'));
         // 根据模型更改更新类型扩展定义
         let currentModelItem: ModelItem | null | undefined = null;
         watchEffect(() => {

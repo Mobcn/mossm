@@ -144,14 +144,14 @@ html.dark {
     --vxe-checkbox-checked-icon-border-color: #4e4a4a;
     --vxe-checkbox-indeterminate-icon-background-color: #4c4c4c;
 }
-html.dark .vxe-button.type--button.theme--primary:not(.is--disabled),
-html.dark .vxe-button.type--button.theme--danger:not(.is--disabled) {
+html.dark .vxe-button.type--button.theme--primary,
+html.dark .vxe-button.type--button.theme--danger {
     background-color: transparent;
 }
-html.dark .vxe-button.type--button.theme--primary:not(.is--disabled):hover {
+html.dark .vxe-button.type--button.theme--primary:hover {
     background-color: var(--vxe-primary-lighten-color);
 }
-html.dark .vxe-button.type--button.theme--danger:not(.is--disabled):hover {
+html.dark .vxe-button.type--button.theme--danger:hover {
     background-color: var(--vxe-danger-lighten-color);
 }
 </style>
