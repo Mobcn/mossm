@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MonacoEditor from '@/components/editor/MonacoEditor.vue';
+import declareConfig from '@/assets/declare.json';
 import type { ModelItem } from '../MoAPI.vue';
 import type { EditorOptions, MonacoEditorInstance } from '@/components/editor/MonacoEditor.vue';
 
@@ -49,17 +50,25 @@ onMounted(() => {
         /** 添加扩展类型定义函数 */
         const addExtraLib = buildAddExtraLib(languages);
         // 设置扩展类型定义
-        loadFileText('/declare/mongoose.d.ts').then((content) => addExtraLib(content, 'mongoose.d.ts'));
-        loadFileText('/declare/global.d.ts').then((content) => addExtraLib(content, 'global.d.ts'));
-        // 根据模型更改更新类型扩展定义
-        let currentModelItem: ModelItem | null | undefined = null;
-        watchEffect(() => {
-            const params = props.params;
-            if (currentModelItem !== params?.modelItem) {
-                currentModelItem = params?.modelItem;
-                const content = getDeclareModelText(currentModelItem);
-                addExtraLib(content, 'model.d.ts');
+        const addList = declareConfig.map(async (path) => {
+            let content = storage.get('declare_cache@' + path);
+            if (!content) {
+                content = await loadFileText(`/declare/${path}`);
+                storage.set('declare_cache@' + path, content);
             }
+            addExtraLib(content, path, false);
+        });
+        Promise.all(addList).then(() => {
+            // 根据模型更改更新类型扩展定义
+            let currentModelItem: ModelItem | null | undefined = null;
+            watchEffect(() => {
+                const params = props.params;
+                if (currentModelItem !== params?.modelItem) {
+                    currentModelItem = params?.modelItem;
+                    const content = getDeclareModelText(currentModelItem);
+                    addExtraLib(content, 'model.d.ts');
+                }
+            });
         });
     });
 });
@@ -75,40 +84,41 @@ function buildAddExtraLib(languages: typeof monaco.languages & { typescript?: an
     let extraLibs: ExtraLibs;
     let update: () => void | undefined;
     const current = { exec: exec1 };
-    function exec1(content: string, filePath: string) {
-        (typescript = languages.typescript) && (current.exec = exec2)(content, filePath);
+    function exec1(content: string, filePath: string, isUpdate?: boolean) {
+        (typescript = languages.typescript) && (current.exec = exec2)(content, filePath, isUpdate);
     }
-    function exec2(content: string, filePath: string) {
-        (extraLibs = typescript.javascriptDefaults.getExtraLibs()) && (current.exec = exec3)(content, filePath);
+    function exec2(content: string, filePath: string, isUpdate?: boolean) {
+        (extraLibs = typescript.javascriptDefaults.getExtraLibs()) &&
+            (current.exec = exec3)(content, filePath, isUpdate);
     }
-    async function exec3(content: string, filePath: string) {
+    async function exec3(content: string, filePath: string, isUpdate?: boolean) {
         if (!('getJavaScriptWorker' in typescript)) {
             append(content, filePath);
             return;
         }
-        (current.exec = exec4)(content, filePath);
+        (current.exec = exec4)(content, filePath, isUpdate);
     }
-    async function exec4(content: string, filePath: string) {
+    async function exec4(content: string, filePath: string, isUpdate?: boolean) {
         const getJavaScriptWorker = await typescript.getJavaScriptWorker();
         if (!getJavaScriptWorker) {
             append(content, filePath);
             return;
         }
         worker = getJavaScriptWorker;
-        (current.exec = exec5)(content, filePath);
+        (current.exec = exec5)(content, filePath, isUpdate);
     }
-    async function exec5(content: string, filePath: string) {
+    async function exec5(content: string, filePath: string, isUpdate?: boolean) {
         const javaScriptWorker = await worker();
         if (!javaScriptWorker) {
             append(content, filePath);
             return;
         }
         update = () => javaScriptWorker.updateExtraLibs(toRaw(extraLibs));
-        (current.exec = exec6)(content, filePath);
+        (current.exec = exec6)(content, filePath, isUpdate);
     }
-    function exec6(content: string, filePath: string) {
+    function exec6(content: string, filePath: string, isUpdate?: boolean) {
         append(content, filePath);
-        update();
+        isUpdate && update();
     }
     function append(content: string, filePath: string) {
         const version = filePath in extraLibs ? extraLibs[filePath].version + 1 : 1;
@@ -120,7 +130,10 @@ function buildAddExtraLib(languages: typeof monaco.languages & { typescript?: an
      * @param content 扩展类型定义文本内容
      * @param filePath 文件路径
      */
-    return (content: string, filePath: string) => current.exec(content, filePath);
+    return (content: string, filePath: string, isUpdate?: boolean) => {
+        isUpdate === undefined && (isUpdate = true);
+        current.exec(content, filePath, isUpdate);
+    };
 }
 
 /**
@@ -140,7 +153,7 @@ function getDeclareModelText(modelItem?: ModelItem) {
         modelTypeText = modelTypeText.replace(/Boolean/g, 'boolean');
         modelTypeText += '&';
     }
-    return `declare const Model: mongoose.Model<${modelTypeText}{ [x: string]: any }>;`;
+    return `namespace TMongoose {\n    import mongoose from 'mongoose';\n    type TModel = mongoose.Model<${modelTypeText}{ [x: string]: any }>;\n}\n\ndeclare const Model: TMongoose.TModel;`;
 }
 </script>
 
