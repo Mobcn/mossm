@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import MoIcon from '@/components/icons/MoIcon.vue';
 import { ElMessage } from 'element-plus';
+import CanvasNest from 'canvas-nest.js';
 import type { FormInstance } from 'element-plus';
 import type { ProvideChangePage } from '@/App.vue';
 
@@ -21,11 +22,10 @@ const rules = {
     password: [{ required: true, message: '密码不能为空', trigger: 'blur' }]
 };
 
-/** CSS变量 */
-const cssVariable = reactive({
-    // 背景图片路径
-    backgroundURL: `url('${storage.get('backgroundImageURL') || '/img/background.png'}')`
-});
+// Canvas设置
+let canvasNest: CanvasNest | undefined;
+onMounted(() => (canvasNest = new CanvasNest(document.body)));
+onUnmounted(() => canvasNest?.destroy());
 
 /** 页面修改 */
 const changePage = inject<ProvideChangePage>('changePage', () => {
@@ -111,69 +111,13 @@ function login() {
 <style scoped>
 .mo-login {
     height: 100vh;
-    --mo-login-background-url: v-bind(cssVariable.backgroundURL);
-    --mo-login-background-image: var(--mo-login-background-url);
-    --mo-login-background-after-background: #f6f6f6b4;
+    --mo-login-background-image: linear-gradient(rgb(135, 206, 235, 0), rgb(135, 206, 235, 0.5), rgb(135, 206, 235, 1));
     --mo-login-panel-background: #fff80;
     --mo-login-panel-box-shadow: 0 0 10px #000;
     --mo-login-title-font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
         '微软雅黑', Arial, sans-serif;
     --mo-login-title-font-size: 30px;
     --mo-login-title-color: #000;
-}
-
-@media screen and (max-width: 1500px) {
-    .mo-login__panel {
-        width: 360px;
-        height: 270px;
-    }
-
-    .mo-login__title {
-        height: 56px;
-    }
-
-    .mo-login__form.el-form {
-        padding: 28.8px;
-    }
-
-    .mo-login__item.el-form-item {
-        margin-bottom: 20.1px;
-    }
-
-    .mo-login__input.el-input {
-        height: 36px;
-    }
-
-    .mo-login__button.el-button {
-        height: 36px;
-    }
-}
-
-@media screen and (min-width: 1501px) {
-    .mo-login__panel {
-        width: 24vw;
-        height: 18vw;
-    }
-
-    .mo-login__title {
-        height: 3.67vw;
-    }
-
-    .mo-login__form.el-form {
-        padding: 1.92vw;
-    }
-
-    .mo-login__item.el-form-item {
-        margin-bottom: 1.34vw;
-    }
-
-    .mo-login__input.el-input {
-        height: 2.4vw;
-    }
-
-    .mo-login__button.el-button {
-        height: 2.4vw;
-    }
 }
 
 .mo-login__background {
@@ -184,25 +128,14 @@ function login() {
     width: 100vw;
     height: 100vh;
     background-image: var(--mo-login-background-image);
-    background-repeat: no-repeat;
-    background-position: 0 -80px;
-    background-size: cover;
-}
-
-.mo-login__background:after {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    content: '';
-    background: var(--mo-login-background-after-background);
 }
 
 .mo-login__panel {
     position: relative;
     top: 15vh;
     overflow: hidden;
+    width: 24vw;
+    height: 18vw;
     margin: 0 auto;
     border-radius: 5px;
     background: var(--mo-login-panel-background);
@@ -215,16 +148,29 @@ function login() {
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 3.67vw;
     color: var(--mo-login-title-color);
     border-bottom: 1px solid #ddd;
 }
 
+.mo-login__form.el-form {
+    padding: 1.92vw;
+}
+
+.mo-login__item.el-form-item {
+    margin-bottom: 1.34vw;
+}
 .mo-login__item--last.el-form-item {
     margin-bottom: 0;
 }
 
+.mo-login__input.el-input {
+    height: 2.4vw;
+}
+
 .mo-login__button.el-button {
     width: 100%;
+    height: 2.4vw;
     text-align: center;
 }
 </style>

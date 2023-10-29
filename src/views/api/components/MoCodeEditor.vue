@@ -54,7 +54,7 @@ onMounted(() => {
             let content = storage.get('declare_cache@' + path);
             if (!content) {
                 const text = await loadFileText(path);
-                if (text.indexOf('declare module') !== -1) {
+                if (text.indexOf('declare module') !== -1 || !path.startsWith('http')) {
                     content = text;
                 } else {
                     let moduleName = path;

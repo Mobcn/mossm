@@ -72,6 +72,13 @@ export default defineConfig({
                     var: 'VXETable',
                     path: 'https://registry.npmmirror.com/vxe-table/4.5.12/files/lib/index.umd.min.js',
                     css: ['https://registry.npmmirror.com/vxe-table/4.5.12/files/lib/style.css']
+                },
+
+                // canvas-nest.js
+                {
+                    name: 'canvas-nest.js',
+                    var: 'CanvasNest',
+                    path: 'https://registry.npmmirror.com/canvas-nest.js/2.0.4/files/dist/canvas-nest.umd.js'
                 }
             ]
         }),
