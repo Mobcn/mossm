@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MonacoEditor from '@/components/editor/MonacoEditor.vue';
-import declareConfig from '@/assets/declare.json';
+import declareList from '@/assets/declare.json';
 import type { ModelItem } from '../MoAPI.vue';
 import type { EditorOptions, MonacoEditorInstance } from '@/components/editor/MonacoEditor.vue';
 
@@ -50,10 +50,19 @@ onMounted(() => {
         /** 添加扩展类型定义函数 */
         const addExtraLib = buildAddExtraLib(languages);
         // 设置扩展类型定义
-        const addList = declareConfig.map(async (path) => {
+        const addList = declareList.map(async (path) => {
             let content = storage.get('declare_cache@' + path);
             if (!content) {
-                content = await loadFileText(`/declare/${path}`);
+                const text = await loadFileText(path);
+                if (text.indexOf('declare module') !== -1) {
+                    content = text;
+                } else {
+                    let moduleName = path;
+                    const index = moduleName.lastIndexOf('/');
+                    index !== -1 && (moduleName = path.substring(index + 1));
+                    moduleName.endsWith('.d.ts') && (moduleName = moduleName.substring(0, moduleName.length - 5));
+                    content = `declare module "${moduleName}" {\n${text.replace(/declare /g, '')}\n}`;
+                }
                 storage.set('declare_cache@' + path, content);
             }
             addExtraLib(content, path, false);

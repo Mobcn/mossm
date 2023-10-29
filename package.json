@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node declare-scan && vite",
-    "build": "node declare-scan && vue-tsc && vite build",
-    "preview": "node declare-scan && vite preview"
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "element-plus": "^2.3.14",

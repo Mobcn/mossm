@@ -59,6 +59,19 @@ export default defineConfig({
                     name: 'element-plus/dist/locale/zh-cn.min.mjs',
                     var: 'ElementPlusLocaleZhCn',
                     path: 'https://cdn.staticfile.org/element-plus/2.3.14/locale/zh-cn.min.js'
+                },
+
+                // vxe-table组件库
+                {
+                    name: 'xe-utils',
+                    var: 'XEUtils',
+                    path: 'https://registry.npmmirror.com/xe-utils/3.5.13/files/dist/xe-utils.umd.min.js'
+                },
+                {
+                    name: 'vxe-table',
+                    var: 'VXETable',
+                    path: 'https://registry.npmmirror.com/vxe-table/4.5.12/files/lib/index.umd.min.js',
+                    css: ['https://registry.npmmirror.com/vxe-table/4.5.12/files/lib/style.css']
                 }
             ]
         }),
@@ -84,14 +97,5 @@ export default defineConfig({
     },
     define: {
         'process.env': { VUE_APP_ENV: NODE_ENV }
-    },
-    server: {
-        proxy: {
-            '/mossm': {
-                target: 'https://mossm.mobingc.cn',
-                changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, '')
-            }
-        }
     }
 });
