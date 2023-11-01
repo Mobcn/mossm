@@ -28,6 +28,15 @@ class ModelService extends BaseService {
     }
 
     /**
+     * 获取所有模型
+     *
+     * @param {string} [module] 模块
+     */
+    async listAll(module) {
+        return await this.DAO.list({ filter: { module } });
+    }
+
+    /**
      * 添加
      *
      * @param {Object} param0 保存数据

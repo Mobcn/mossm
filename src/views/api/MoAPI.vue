@@ -5,6 +5,10 @@ import type { MoGridProps } from '@/components/grid/MoGrid.vue';
 import type { API, SaveAPI, UpdateAPI } from '@/api/api-service';
 import type { Model } from '@/api/model-service';
 import type { ParamItem } from '@/utils/handler-template';
+import type { EditData } from '@/components/grid/components/MoForm.vue';
+
+/** 表格行数据类型 */
+type GridRow = Omit<API, '_id'> & { _id?: string };
 
 /** 模型缓存 */
 const modelCache = new Map<string, ModelItem>();
@@ -17,8 +21,75 @@ const typeOptions = [
     { label: '删除', value: 'DELETE' }
 ];
 
+/**
+ * 加载模块
+ */
+const loadModule = (() => {
+    let cache: { label: string; value: string }[] | undefined;
+    return async () => {
+        if (cache) {
+            return cache;
+        }
+        const list = await moduleService.all();
+        return (cache = list.map((item) => ({ label: item, value: item })));
+    };
+})();
+
+/**
+ * 加载模型
+ */
+const loadModel = (() => {
+    const cache = new Map<string, { label: string; value: string }[]>();
+    return async (editDataRef: Ref<EditData<GridRow>>) => {
+        const module = editDataRef.value.module;
+        if (!module) {
+            editDataRef.value.model = '';
+            return [];
+        }
+        if (cache.has(module)) {
+            return cache.get(module)!;
+        }
+        const list = await modelService.all(module);
+        const options = list.map((item) => {
+            modelCache.set(module + '#' + item.name, {
+                ...item,
+                schema: eval('(' + item.property + ')')
+            });
+            return { label: item.name, value: item.name };
+        });
+        cache.set(module, options);
+        return options;
+    };
+})();
+
 /** 表组件参数 */
-const gridProps: MoGridProps<Omit<API, '_id'> & { _id?: string }> = {
+const gridProps: MoGridProps<GridRow> = {
+    search: {
+        components: [
+            {
+                type: 'select',
+                name: 'module',
+                label: '模块：',
+                placeholder: '请选择模块',
+                options: loadModule
+            },
+            {
+                type: 'select',
+                name: 'model',
+                label: '模型：',
+                placeholder: '请选择模型',
+                disabled: (editData) => editData.module === '',
+                options: loadModel
+            }
+        ],
+        watch: [
+            (editDataRef) => {
+                if (!editDataRef.value.module) {
+                    editDataRef.value.model = '';
+                }
+            }
+        ]
+    },
     toolbar: {
         buttons: ['add', 'deleteBatch']
     },
@@ -71,10 +142,7 @@ const gridProps: MoGridProps<Omit<API, '_id'> & { _id?: string }> = {
                 name: 'module',
                 label: '模块：',
                 placeholder: '请选择模块',
-                options: async () => {
-                    const list = await moduleService.all();
-                    return list.map((item) => ({ label: item, value: item }));
-                }
+                options: loadModule
             },
             {
                 type: 'select',
@@ -82,29 +150,7 @@ const gridProps: MoGridProps<Omit<API, '_id'> & { _id?: string }> = {
                 label: '模型：',
                 placeholder: '请选择模型',
                 disabled: (editData) => editData.module === '',
-                options: (() => {
-                    const optionsCache = new Map<string, { label: string; value: string }[]>();
-                    return async (editDataRef) => {
-                        const module = editDataRef.value.module;
-                        if (!module) {
-                            editDataRef.value.model = '';
-                            return [];
-                        }
-                        if (optionsCache.has(module)) {
-                            return optionsCache.get(module)!;
-                        }
-                        const list = await modelService.all(module);
-                        const options = list.map((item) => {
-                            modelCache.set(module + '#' + item.name, {
-                                ...item,
-                                schema: eval('(' + item.property + ')')
-                            });
-                            return { label: item.name, value: item.name };
-                        });
-                        optionsCache.set(module, options);
-                        return options;
-                    };
-                })()
+                options: loadModel
             },
             {
                 type: 'input',
@@ -254,10 +300,10 @@ const gridProps: MoGridProps<Omit<API, '_id'> & { _id?: string }> = {
         labelWidth: 110
     },
     api: {
-        list: async () => {
-            const list = await apiService.all();
-            const total = list.length;
-            return { list, total };
+        list: async ({ page, limit, searchData }) => {
+            const module = searchData?.module || undefined;
+            const model = searchData?.model || undefined;
+            return await apiService.list({ module, model, page, limit });
         },
         add: async (editData) => {
             const saveData: SaveAPI = {

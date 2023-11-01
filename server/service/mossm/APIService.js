@@ -20,6 +20,19 @@ class APIService extends BaseService {
     }
 
     /**
+     * 获取分页数据
+     *
+     * @param {Object} param0 参数
+     * @param {string} [param0.module] 模块
+     * @param {string} [param0.model] 模型
+     * @param {number} [param0.page] 页数
+     * @param {number} [param0.limit] 每页数据条数
+     */
+    async page({ module, model, page, limit }) {
+        return await this.DAO.page({ filter: { module, model }, page, limit });
+    }
+
+    /**
      * 保存
      *
      * @param {Object} param0 请求参数

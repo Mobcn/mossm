@@ -10,6 +10,11 @@ export const mossmApi = {
     all: '/mossm/api/all',
 
     /**
+     * 获取接口分页列表
+     */
+    list: '/mossm/api/list',
+
+    /**
      * 添加接口
      */
     save: '/mossm/api/save',
@@ -35,11 +40,19 @@ const apiService = {
     all: async (): Promise<API[]> => service.get(mossmApi.all),
 
     /**
+     * 获取接口分页列表
+     */
+    list: async (params?: ListParams): Promise<{ list: API[]; total: number }> => {
+        return service.get(mossmApi.list, params);
+    },
+
+    /**
      * 添加接口
      *
      * @param data 接口添加信息
      */
     save: async (data: SaveAPI): Promise<API> => service.post(mossmApi.save, data),
+
     /**
      * 修改接口
      *
@@ -56,6 +69,20 @@ const apiService = {
 };
 
 export default apiService;
+
+/**
+ * 获取接口分页列表参数
+ */
+type ListParams = {
+    /** 模块 */
+    module?: string;
+    /** 模型 */
+    model?: string;
+    /** 页码 */
+    page?: number;
+    /** 每页数据条数 */
+    limit?: number;
+};
 
 /**
  * 接口保存数据类型

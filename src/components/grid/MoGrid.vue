@@ -8,7 +8,8 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import type { MoSearchProps, SearchData } from './components/MoSearch.vue';
 import type { MoToolbarProps } from './components/MoToolbar.vue';
 import type { MoTableProps, MoTableInstance } from './components/MoTable.vue';
-import type { EditData, MoEditDialogConfig, MoEditDialogParams } from './components/MoEditDialog.vue';
+import type { EditData } from './components/MoForm.vue';
+import type { MoEditDialogConfig, MoEditDialogParams } from './components/MoEditDialog.vue';
 
 /** 参数 */
 const props = defineProps<MoGridProps<T>>();
@@ -200,7 +201,7 @@ function openEditDialog(data?: T) {
 /**
  * API参数
  */
-type ApiParams<T> = {
+type ApiParams<T extends Record<string, any>> = {
     /** 获取数据列表 */
     list: (params: ListApiParams<T>) => { list: T[]; total: number } | Promise<{ list: T[]; total: number }>;
     /** 添加数据 */
@@ -216,7 +217,7 @@ type ApiParams<T> = {
 /**
  * 获取数据列表参数
  */
-type ListApiParams<T> = {
+type ListApiParams<T extends Record<string, any>> = {
     /** 查询数据 */
     searchData?: SearchData<T>;
     /** 页码 */
