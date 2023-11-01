@@ -232,7 +232,7 @@ export default class FetchService {
             if (value instanceof Array) {
                 value.forEach((item) => _url.searchParams.append(key, String(item)));
             } else {
-                _url.searchParams.append(key, String(value));
+                value && _url.searchParams.append(key, String(value));
             }
         }
         return url.startsWith('http') ? _url.href : _url.href.replace('http://localhost', '');
