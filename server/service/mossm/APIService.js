@@ -29,7 +29,12 @@ class APIService extends BaseService {
      * @param {number} [param0.limit] 每页数据条数
      */
     async page({ module, model, page, limit }) {
-        return await this.DAO.page({ filter: { module, model }, page, limit });
+        const filter = {};
+        if (module) {
+            filter.module = module;
+            model && (filter.model = model);
+        }
+        return await this.DAO.page({ filter, page, limit });
     }
 
     /**
