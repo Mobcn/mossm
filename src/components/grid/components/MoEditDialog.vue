@@ -87,7 +87,7 @@ export type MoEditDialogProps<T extends Record<string, any>> = {
         :title="title"
         :width="props.config.width"
         @open="() => moFormRef?.clearValidate()"
-        @closed="() => (formData = {} as T)"
+        @closed="() => (formData = undefined)"
     >
         <mo-form
             ref="moFormRef"

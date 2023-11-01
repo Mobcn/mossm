@@ -19,7 +19,7 @@ export function commonHandlerTemplate(
         params.forEach((p, index) => {
             const type = p.type === 'Date' || p.type === 'Object' ? p.type : p.type.toLowerCase();
             const param = p.default ? `[param0.${p.name}=${p.default}]` : `param0.${p.name}`;
-            comment += ` * @param {${type}} ${param} ${p.description}\n`;
+            comment += ` * @param {${type}} ${param} ${p.description || ''}\n`;
             index > 0 && (paramObjectString += ', ');
             paramObjectString += p.default ? `${p.name} = ${p.default}` : p.name;
         });
