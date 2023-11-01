@@ -15,6 +15,7 @@ const router = {
     '/mossm/chsetting': () => import('../controller/mossm/chsetting.js'),
     '/mossm/login': () => import('../controller/mossm/login.js'),
     '/mossm/api/all': () => import('../controller/mossm/api/all.js'),
+    '/mossm/api/list': () => import('../controller/mossm/api/list.js'),
     '/mossm/api/remove': () => import('../controller/mossm/api/remove.js'),
     '/mossm/api/save': () => import('../controller/mossm/api/save.js'),
     '/mossm/api/update': () => import('../controller/mossm/api/update.js'),
