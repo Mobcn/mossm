@@ -1,5 +1,5 @@
-import { BaseDAO } from '#dao/BaseDAO.js';
-import { Model } from '#dao/mossm/model/APIModel.js';
+import { BaseDAO } from '../BaseDAO.js';
+import { Model } from './model/APIModel.js';
 
 /**
  * API数据访问

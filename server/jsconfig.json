@@ -1,14 +1,6 @@
 {
     "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "#handler": ["./handler/index.js"],
-            "#db": ["./dao/database/db.js"],
-            "#dao/*": ["./dao/*"],
-            "#service/*": ["./service/*"],
-            "#controller/*": ["./controller/*"],
-            "#utils/*": ["./utils/*"]
-        }
+        "baseUrl": "."
     },
     "exclude": [
         "node_modules",

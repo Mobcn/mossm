@@ -1,5 +1,7 @@
-import DB from '#db';
-import jsonwebtoken from 'jsonwebtoken';
+import DB from '../dao/database/db.js';
+import ENV from './env.js';
+import JWT from './jwt.js';
+import Result from './result.js';
 
 /** @typedef {import('http').IncomingMessage} IncomingMessage 消息 */
 /** @typedef {import('http').ServerResponse} ServerResponse 响应 */
@@ -12,13 +14,10 @@ import jsonwebtoken from 'jsonwebtoken';
 /** @typedef {(statusOrUrl: string | number, url?: string) => VercelResponse} RedirectFun 重定向 */
 /** @typedef {IncomingMessage & { query: VercelRequestQuery; cookies: VercelRequestCookies; body: VercelRequestBody; }} VercelRequest Vercel请求 */
 /** @typedef {ServerResponse & { send: SendFun; json: JSONFun; status: StatusFun; redirect: RedirectFun; }} VercelResponse Vercel响应 */
+/** @typedef {{ methods?: string | string[], secretKey?: string }} VHandlerSetting 请求处理器设置 */
 
-/**
- * @typedef {{
- *     methods?: string | string[],
- *     secretKey?: string
- * }} VHandlerSetting 请求处理器设置
- */
+/** JWT密匙 */
+const JWT_SECRET_KEY = ENV.get('JWT_SECRET_KEY');
 
 /**
  * 请求处理器
@@ -71,10 +70,10 @@ class VHandler {
      * @param {VHandlerSetting} setting 请求处理器设置
      */
     static buildGETAndAuth(controller, setting) {
-        if (!process.env.JWT_SECRET_KEY) {
+        if (!JWT_SECRET_KEY) {
             throw new Error('缺少环境变量`JWT_SECRET_KEY`');
         }
-        return VHandler.buildGET(controller, Object.assign({}, setting, { secretKey: process.env.JWT_SECRET_KEY }));
+        return VHandler.buildGET(controller, Object.assign({}, setting, { secretKey: JWT_SECRET_KEY }));
     }
 
     /**
@@ -94,10 +93,10 @@ class VHandler {
      * @param {VHandlerSetting} setting 请求处理器设置
      */
     static buildPOSTAndAuth(controller, setting) {
-        if (!process.env.JWT_SECRET_KEY) {
+        if (!JWT_SECRET_KEY) {
             throw new Error('缺少环境变量`JWT_SECRET_KEY`');
         }
-        return VHandler.buildPOST(controller, Object.assign({}, setting, { secretKey: process.env.JWT_SECRET_KEY }));
+        return VHandler.buildPOST(controller, Object.assign({}, setting, { secretKey: JWT_SECRET_KEY }));
     }
 
     /**
@@ -162,8 +161,8 @@ class VHandler {
                 response.status(401).end('没有权限');
                 return;
             }
-            new Promise((resolve, reject) => {
-                DB.connect().catch((error) => reject(error));
+            new Promise(async (resolve, reject) => {
+                await DB.connect();
                 Promise.resolve(controller(params, request, response))
                     .then((result) => {
                         response.status(200);
@@ -178,92 +177,11 @@ class VHandler {
                     .catch((error) => reject(error));
             }).catch((error) => {
                 response.setHeader('Content-Type', 'application/json;charset=UTF-8');
-                response.json(Result.error({ message: error.message }));
+                response.json(Result.error({ message: error.stack }));
             });
         };
     }
 }
 
-/**
- * 返回数据对象
- */
-export class Result {
-    /** 响应码 */
-    code;
-
-    /** 响应消息 */
-    message;
-
-    /** 响应数据 */
-    data;
-
-    /**
-     * @param {Object} param0 参数
-     * @param {number} [param0.code=0] 响应码
-     * @param {string} [param0.message='成功!'] 响应消息
-     * @param {any} param0.data 响应数据
-     */
-    constructor({ code = 0, message = '成功!', data }) {
-        this.code = code;
-        this.message = message;
-        this.data = data;
-    }
-
-    /**
-     * 成功
-     *
-     * @param {{ code?: number; message?: string; data?: any }} params 结果参数
-     */
-    static success(params) {
-        return new Result(params ?? {});
-    }
-
-    /**
-     * 错误
-     *
-     * @param {{ code?: number; message?: string }} params 结果参数
-     */
-    static error(params) {
-        return new Result(Object.assign({ code: -1, message: '失败!' }, params));
-    }
-}
-
-/**
- * JWT工具
- */
-export const JWT = {
-    /**
-     * JWT签名
-     *
-     * @param {Record<string, any>} data token数据
-     * @param {string} secretKey 密钥
-     * @param {string | number} [expiresIn='1h'] 过期时间
-     */
-    sign: (data, secretKey, expiresIn = '1h') => {
-        if (!secretKey) {
-            throw new Error('缺少`secretKey`!');
-        }
-        return jsonwebtoken.sign(data || {}, secretKey, { expiresIn });
-    },
-
-    /**
-     * JWT校验
-     *
-     * @param {string} token token
-     * @param {string} secretKey 密钥
-     * @param {boolean} [ignoreExpiration] 是否忽略过期
-     */
-    verify: (token, secretKey, ignoreExpiration) => {
-        if (!secretKey) {
-            throw new Error('缺少`secretKey`!');
-        }
-        const data = jsonwebtoken.verify(token, secretKey, { ignoreExpiration });
-        if (ignoreExpiration) {
-            delete data['iat'];
-            delete data['exp'];
-        }
-        return data;
-    }
-};
-
 export default VHandler;
+export { ENV, JWT, Result };

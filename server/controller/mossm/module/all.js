@@ -1,5 +1,5 @@
-import VHandler, { Result } from '#handler';
-import { moduleService } from '#service/mossm/ModuleService.js';
+import VHandler, { Result } from '../../../handler/index.js';
+import { moduleService } from '../../../service/mossm/ModuleService.js';
 
 /**
  * 获取所有模块

@@ -98,10 +98,12 @@ const loadOptions = (() => {
             const reactiveOptions = reactive<SelectItem[]>([]);
             optionsCache.set(options, reactiveOptions);
             watchEffect(async () => {
-                const res = options(formData);
-                const list = await Promise.resolve(res);
-                reactiveOptions.splice(0);
-                reactiveOptions.push(...list);
+                if (visible.value && reactiveOptions.length <= 0) {
+                    const res = options(formData);
+                    const list = await Promise.resolve(res);
+                    reactiveOptions.splice(0);
+                    reactiveOptions.push(...list);
+                }
             });
         }
         return optionsCache.get(options)!;

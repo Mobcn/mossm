@@ -1,18 +1,17 @@
 /**
  * @template T
- * @typedef {T extends import('#dao/BaseDAO').BaseDAO<infer U> ? U : T} ExtractModel
+ * @typedef {T extends import('../dao/BaseDAO').BaseDAO<infer U> ? U : T} ExtractModel
  */
 
 /**
  * @template T
- * @typedef {import("#dao/BaseDAO").RawDocType<T>} RawDocType
+ * @typedef {import("../dao/BaseDAO").RawDocType<T>} RawDocType
  */
 
 /**
  * 基础服务
  *
- * @template {import('#dao/BaseDAO').BaseDAO<TModel>} TDAO
- * @template {import('mongoose').Model} TModel
+ * @template {import('../dao/BaseDAO').BaseDAO<TModel>} TDAO
  */
 class BaseService {
     /**

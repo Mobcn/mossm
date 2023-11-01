@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
-import { BaseService } from '#service/BaseService.js';
-import { modelDAO } from '#dao/mossm/ModelDAO.js';
+import { BaseService } from '../BaseService.js';
+import { modelDAO } from '../../dao/mossm/ModelDAO.js';
 
-/** @typedef {import('#dao/mossm/ModelDAO').ModelDAO} DAO */
-/** @typedef {import('#service/BaseService').ExtractModel<DAO>} Model */
+/** @typedef {import('../../dao/mossm/ModelDAO').ModelDAO} DAO */
+/** @typedef {import('../BaseService').ExtractModel<DAO>} Model */
 
 /**
  * Model服务
@@ -15,7 +15,7 @@ class ModelService extends BaseService {
      * 获取apiDAO
      */
     static async getAPIDAO() {
-        const { apiDAO } = await import('#dao/mossm/APIDAO.js');
+        const { apiDAO } = await import('../../dao/mossm/APIDAO.js');
         return apiDAO;
     }
 
@@ -23,7 +23,7 @@ class ModelService extends BaseService {
      * 获取moduleDAO
      */
     static async getModuleDAO() {
-        const { moduleDAO } = await import('#dao/mossm/ModuleDAO.js');
+        const { moduleDAO } = await import('../../dao/mossm/ModuleDAO.js');
         return moduleDAO;
     }
 

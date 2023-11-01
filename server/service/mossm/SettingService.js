@@ -1,8 +1,8 @@
-import { BaseService } from '#service/BaseService.js';
-import { settingDAO } from '#dao/mossm/SettingDAO.js';
+import { BaseService } from '../BaseService.js';
+import { settingDAO } from '../../dao/mossm/SettingDAO.js';
 
-/** @typedef {import('#dao/mossm/SettingDAO').SettingDAO} DAO */
-/** @typedef {import('#service/BaseService').ExtractModel<DAO>} Model */
+/** @typedef {import('../../dao/mossm/SettingDAO').SettingDAO} DAO */
+/** @typedef {import('../BaseService').ExtractModel<DAO>} Model */
 
 /**
  * Setting服务

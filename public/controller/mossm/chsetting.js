@@ -1,5 +1,5 @@
-import VHandler, { Result } from '#handler';
-import { settingService } from '#service/mossm/SettingService.js';
+import VHandler, { Result } from '../../handler/index.js';
+import { settingService } from '../../service/mossm/SettingService.js';
 
 /**
  * 修改系统设置

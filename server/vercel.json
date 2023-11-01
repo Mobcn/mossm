@@ -26,12 +26,12 @@
     ],
     "redirects": [
         {
-            "source": "/controller/(.*)",
+            "source": "/config/(.*)",
             "destination": "/",
             "permanent": true
         },
         {
-            "source": "/service/(.*)",
+            "source": "/controller/(.*)",
             "destination": "/",
             "permanent": true
         },
@@ -42,6 +42,21 @@
         },
         {
             "source": "/handler/(.*)",
+            "destination": "/",
+            "permanent": true
+        },
+        {
+            "source": "/netlify/(.*)",
+            "destination": "/",
+            "permanent": true
+        },
+        {
+            "source": "/plugins/(.*)",
+            "destination": "/",
+            "permanent": true
+        },
+        {
+            "source": "/service/(.*)",
             "destination": "/",
             "permanent": true
         },

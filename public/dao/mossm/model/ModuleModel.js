@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
 /**
  * Module表
@@ -21,8 +21,8 @@ const info = {
     }
 };
 
-export const Model = mongoose.model(info.model, new Schema(info.property), info.table);
+export const Model = mongoose.model(info.model, new mongoose.Schema(info.property), info.table);
 
 /**
- * @typedef {import('#dao/BaseDAO').RawDocType<typeof Model>} Module
+ * @typedef {import('../../BaseDAO').RawDocType<typeof Model>} Module
  */

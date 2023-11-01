@@ -1,9 +1,9 @@
-import { BaseService } from '#service/BaseService.js';
-import { apiDAO } from '#dao/mossm/APIDAO.js';
+import { BaseService } from '../BaseService.js';
+import { apiDAO } from '../../dao/mossm/APIDAO.js';
 import { minify } from 'terser';
 
-/** @typedef {import('#dao/mossm/APIDAO').APIDAO} DAO */
-/** @typedef {import('#service/BaseService').ExtractModel<DAO>} Model */
+/** @typedef {import('../../dao/mossm/APIDAO').APIDAO} DAO */
+/** @typedef {import('../BaseService').ExtractModel<DAO>} Model */
 
 /**
  * API服务
@@ -15,7 +15,7 @@ class APIService extends BaseService {
      * 获取moduleDAO
      */
     static async getModuleDAO() {
-        const { moduleDAO } = await import('#dao/mossm/ModuleDAO.js');
+        const { moduleDAO } = await import('../../dao/mossm/ModuleDAO.js');
         return moduleDAO;
     }
 

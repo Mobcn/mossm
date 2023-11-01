@@ -1,16 +1,13 @@
 {
     "type": "module",
     "imports": {
-        "#handler": "./handler/index.js",
-        "#db": "./dao/database/db.js",
-        "#dao/*": "./dao/*",
-        "#service/*": "./service/*",
-        "#controller/*": "./controller/*",
-        "#utils/*": "./utils/*"
+        "jsonwebtoken": "./plugins/bundled-jsonwebtoken.js",
+        "mongoose": "./plugins/bundled-mongoose.js",
+        "terser": "./plugins/bundled-terser.js"
     },
-    "dependencies": {
+    "devDependencies": {
         "jsonwebtoken": "^9.0.2",
-        "mongoose": "^7.5.2",
+        "mongoose": "^7.6.3",
         "terser": "^5.22.0"
     }
 }

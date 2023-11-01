@@ -21,6 +21,9 @@ provide('changePage', changePage);
 
 // 初始化操作
 (() => {
+    // 设置环境变量
+    window.process ??= { env: { VUE_APP_ENV: 'production' } };
+
     // 设置主题
     storage.get('mo-theme') === 'dark' && (store.theme = 'dark');
 

@@ -1,5 +1,5 @@
-import VHandler, { Result } from '#handler';
-import { modelService } from '#service/mossm/ModelService.js';
+import VHandler, { Result } from '../../../handler/index.js';
+import { modelService } from '../../../service/mossm/ModelService.js';
 
 /**
  * 删除模型

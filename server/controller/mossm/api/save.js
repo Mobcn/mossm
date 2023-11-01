@@ -1,5 +1,5 @@
-import VHandler, { Result } from '#handler';
-import { apiService } from '#service/mossm/APIService.js';
+import VHandler, { Result } from '../../../handler/index.js';
+import { apiService } from '../../../service/mossm/APIService.js';
 
 /**
  * 添加接口
