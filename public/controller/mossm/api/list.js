@@ -15,6 +15,6 @@ export default VHandler.buildGETAndAuth(
     async ({ module, model, page, limit }) => {
         page && (page = Number(page));
         limit && (limit = Number(limit));
-        Result.success({ message: '获取接口分页列表成功!', data: await apiService.page({ module, model, page, limit }) });
+        return Result.success({ message: '获取接口分页列表成功!', data: await apiService.page({ module, model, page, limit }) });
     }
 );
