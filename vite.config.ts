@@ -104,14 +104,5 @@ export default defineConfig({
     },
     define: {
         'process.env': { VUE_APP_ENV: NODE_ENV }
-    },
-    server: {
-        proxy: {
-            '/mossm': {
-                target: 'https://api.mobingc.cn',
-                changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, '')
-            }
-        }
     }
 });
