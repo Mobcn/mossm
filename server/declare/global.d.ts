@@ -18,3 +18,14 @@ declare class Result {
     static success(params: { code?: number; message?: string; data?: any }): Result;
     static error(params: { code?: number; message?: string }): Result;
 }
+
+namespace IMongoose {
+    import mongoose from 'mongoose';
+    type IModel = mongoose.Model<{ [x: string]: any }, {}>;
+}
+
+declare const importModel: (
+    module: string,
+    model: string,
+    callback?: (Model: IMongoose.IModel) => void
+) => Promise<IMongoose.IModel>;

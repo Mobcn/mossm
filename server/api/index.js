@@ -29,6 +29,28 @@ const router = {
 };
 
 /**
+ * 导入模块
+ *
+ * @param {string} module 模块名
+ * @param {string} model 模型名
+ * @param {(Model: import('mongoose').Model) => void} [callback] 模型名
+ * @returns {Promise<import('mongoose').Model>}
+ */
+async function importModel(module, model, callback) {
+    return new Promise((resolve) => {
+        DB.connect(async (mongoose) => {
+            const findModel = await modelService.DAO.get({ module, name: model });
+            const { name, property, table } = findModel;
+            const tableName = (module + '_' + table).toLowerCase();
+            const schema = new mongoose.Schema(eval('(' + property + ')'));
+            const Model = mongoose.models[name] || mongoose.model(name, schema, tableName);
+            callback && callback(Model);
+            resolve(Model);
+        });
+    });
+}
+
+/**
  * @param {VercelRequest} request 请求对象
  * @param {VercelResponse} response 响应对象
  */
@@ -47,26 +69,23 @@ export default function handler(request, response) {
         const module = paths[1];
         const model = paths[2][0].toUpperCase() + paths[2].substring(1);
         const path = '/' + paths.slice(3).join('/');
-        DB.connect((mongoose) =>
+        DB.connect(() =>
             Promise.all([
                 apiService.DAO.get({ module, model, path, status: true }),
                 moduleService.getByName(module),
-                modelService.DAO.get({ module, name: model })
+                importModel(module, model)
             ])
-                .then(([findApi, findModule, findModel]) => {
-                    if (!findApi || !findModule || !findModel) {
+                .then(([findApi, findModule, Model]) => {
+                    if (!findApi || !findModule || !Model) {
                         response.status(404).end();
                         return;
                     }
-                    const { name, property, table } = findModel;
-                    const tableName = (module + '_' + table).toLowerCase();
-                    const schema = new mongoose.Schema(eval('(' + property + ')'));
-                    const Model = mongoose.models[name] || mongoose.model(name, schema, tableName);
                     const JWT = {
                         sign: (data, expiresIn) => _JWT.sign(data, findModule.secretKey, expiresIn),
                         verify: (token, ignoreExpiration) => _JWT.verify(token, findModule.secretKey, ignoreExpiration)
                     };
-                    const preHander = eval('(Model, Result, JWT) => ' + findApi.handler)(Model, Result, JWT);
+                    const textJS = '(Model, Result, JWT, importModel) => ' + findApi.handler;
+                    const preHander = eval(textJS)(Model, Result, JWT, importModel);
                     const { method: methods, authorized } = findApi;
                     const secretKey = authorized ? findModule.secretKey : undefined;
                     VHandler.config({ methods, secretKey }).build(preHander)(request, response);

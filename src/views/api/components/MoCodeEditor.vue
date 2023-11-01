@@ -162,7 +162,7 @@ function getDeclareModelText(modelItem?: ModelItem) {
         modelTypeText = modelTypeText.replace(/Boolean/g, 'boolean');
         modelTypeText += '&';
     }
-    return `namespace TMongoose {\n    import mongoose from 'mongoose';\n    type TModel = mongoose.Model<${modelTypeText}{ [x: string]: any }>;\n}\n\ndeclare const Model: TMongoose.TModel;`;
+    return `namespace TMongoose {\n    import mongoose from 'mongoose';\n    type TModel = mongoose.Model<${modelTypeText}{ [x: string]: any }, {}>;\n}\n\ndeclare const Model: TMongoose.TModel;`;
 }
 </script>
 
