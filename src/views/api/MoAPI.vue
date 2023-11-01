@@ -5,7 +5,7 @@ import type { MoGridProps } from '@/components/grid/MoGrid.vue';
 import type { API, SaveAPI, UpdateAPI } from '@/api/api-service';
 import type { Model } from '@/api/model-service';
 import type { ParamItem } from '@/utils/handler-template';
-import type { EditData } from '@/components/grid/components/MoForm.vue';
+import type { SelectOptionsLoad } from '@/components/grid/components/MoForm.vue';
 
 /** 表格行数据类型 */
 type GridRow = Omit<API, '_id'> & { _id?: string };
@@ -24,9 +24,10 @@ const typeOptions = [
 /**
  * 加载模块
  */
-const loadModule = (() => {
+const loadModule: SelectOptionsLoad<GridRow> = (() => {
     let cache: { label: string; value: string }[] | undefined;
-    return async () => {
+    return async (_editDataRef, isContinue) => {
+        isContinue.value = false;
         if (cache) {
             return cache;
         }
@@ -38,9 +39,10 @@ const loadModule = (() => {
 /**
  * 加载模型
  */
-const loadModel = (() => {
+const loadModel: SelectOptionsLoad<GridRow> = (() => {
     const cache = new Map<string, { label: string; value: string }[]>();
-    return async (editDataRef: Ref<EditData<GridRow>>) => {
+    return async (editDataRef, isContinue) => {
+        isContinue.value = false;
         const module = editDataRef.value.module;
         if (!module) {
             editDataRef.value.model = '';

@@ -90,10 +90,11 @@ const loadOptions = (() => {
         }
         if (!optionsCache.has(options)) {
             const reactiveOptions = reactive<SelectItem[]>([]);
+            const isContinue = { value: true };
             optionsCache.set(options, reactiveOptions);
             watchEffect(async () => {
-                if (reactiveOptions.length <= 0) {
-                    const res = options(formData);
+                if (reactiveOptions.length <= 0 || isContinue.value) {
+                    const res = options(formData, isContinue);
                     const list = await Promise.resolve(res);
                     reactiveOptions.splice(0);
                     reactiveOptions.push(...list);
@@ -176,8 +177,9 @@ type SelectItem = {
 /**
  * 选择项加载函数
  */
-type SelectOptionsLoad<T extends Record<string, any>> = (
-    editDataRef: Ref<EditData<T>>
+export type SelectOptionsLoad<T extends Record<string, any>> = (
+    editDataRef: Ref<EditData<T>>,
+    isContinue: { value: boolean }
 ) => SelectItem[] | Promise<SelectItem[]>;
 
 /**
