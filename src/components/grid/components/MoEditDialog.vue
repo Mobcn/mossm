@@ -29,7 +29,7 @@ const title = computed(() => {
     return '';
 });
 /** 表单数据 */
-const formData = ref<T>();
+const formData = ref<T | null>();
 
 // 监听数据
 watchEffect(() => {
@@ -87,7 +87,7 @@ export type MoEditDialogProps<T extends Record<string, any>> = {
         :title="title"
         :width="props.config.width"
         @open="() => moFormRef?.clearValidate()"
-        @closed="() => (formData = undefined)"
+        @closed="() => (typeof formData === 'undefined' ? (formData = null) : (formData = undefined))"
     >
         <mo-form
             ref="moFormRef"

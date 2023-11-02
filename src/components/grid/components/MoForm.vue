@@ -18,17 +18,6 @@ const primaryKey = computed(() => props.primaryKey ?? '_id');
 /** 表单数据对象 */
 const formData = ref({}) as Ref<EditData<T>>;
 
-// 是否为行内表单
-const currentInline = computed(() => props.inline ?? false);
-// 标签宽度
-const currentLabelWidth = computed(() => props.labelWidth);
-// 校验规则
-const currentRules = computed(() => props.rules);
-// 组件大小
-const currentSize = computed(() => props.size);
-// 表单组件数组
-const currentComponents = computed(() => props.components ?? []);
-
 /** 字符表单数据对象 */
 const stringFormData = computed<EditData<T>>(() => {
     const data: any = {};
@@ -262,7 +251,7 @@ export type MoFormProps<T extends Record<string, any>> = {
     /** 表单组件数组 */
     components: MoFormComponent<T>[];
     /** 表单数据 */
-    data?: T;
+    data?: T | null;
     /** 主键名，默认为`_id` */
     primaryKey?: keyof T & string;
     /** 是否为行内表单 */
@@ -316,12 +305,12 @@ export type MoFormInstance<T> = ComponentPublicInstance<
     <el-form
         ref="formRef"
         :model="formData"
-        :inline="currentInline"
-        :rules="currentRules"
-        :size="currentSize"
-        :label-width="currentLabelWidth"
+        :inline="(props as any).inline"
+        :rules="(props as any).rules"
+        :size="(props as any).size"
+        :label-width="(props as any).labelWidth"
     >
-        <template v-for="component in currentComponents">
+        <template v-for="component in (props as any).components">
             <el-form-item
                 v-if="component.name !== primaryKey"
                 v-show="!component.visible || component.visible(stringFormData)"
