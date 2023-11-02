@@ -20,6 +20,8 @@ const props = defineProps<{
     params?: {
         /** 模型 */
         modelItem?: ModelItem;
+        /** 模型数组 */
+        modelItems?: ModelItem[];
     };
 }>();
 
@@ -74,7 +76,7 @@ onMounted(() => {
                 const params = props.params;
                 if (currentModelItem !== params?.modelItem) {
                     currentModelItem = params?.modelItem;
-                    const content = getDeclareModelText(currentModelItem);
+                    const content = getModelDeclareText(currentModelItem, params!.modelItems);
                     addExtraLib(content, 'model.d.ts');
                 }
             });
@@ -147,22 +149,42 @@ function buildAddExtraLib(languages: typeof monaco.languages & { typescript?: an
 
 /**
  * 获取Model定义文本
+ *
+ * @param modelItem 模型项
+ * @param modelItems 模型项数组
  */
-function getDeclareModelText(modelItem?: ModelItem) {
-    let modelTypeText = '';
-    if (modelItem) {
-        const types: any = {};
-        for (const [key, value] of Object.entries<Function | { type: Function }>(modelItem.schema)) {
-            types[key] = 'type' in value ? value.type.name : value.name;
-        }
-        modelTypeText = JSON.stringify(types);
-        modelTypeText = modelTypeText.replace(/"/g, '');
-        modelTypeText = modelTypeText.replace(/String/g, 'string');
-        modelTypeText = modelTypeText.replace(/Number/g, 'number');
-        modelTypeText = modelTypeText.replace(/Boolean/g, 'boolean');
-        modelTypeText += '&';
+function getModelDeclareText(modelItem?: ModelItem, modelItems?: ModelItem[]) {
+    if (!modelItem) {
+        return '';
     }
-    return `namespace TMongoose {\n    import mongoose from 'mongoose';\n    type TModel = mongoose.Model<${modelTypeText}{ [x: string]: any }, {}>;\n}\n\ndeclare const Model: TMongoose.TModel;`;
+    const namespace = modelItem.module.replace(/./, (i) => i.toUpperCase()) + 'Module';
+    let types = '';
+    let names = 'type ModelName';
+    let results = 'type ResultModel<T> =';
+    for (const item of modelItems!) {
+        const arr: any = {};
+        for (const [key, value] of Object.entries<Function | { type: Function }>(item.schema)) {
+            arr[key] = 'type' in value ? value.type.name : value.name;
+        }
+        types += `\n    type ${item.name}Model = mongoose.Model<${JSON.stringify(arr)
+            .replace(/"/g, '')
+            .replace(/String/g, 'string')
+            .replace(/Number/g, 'number')
+            .replace(/Boolean/g, 'boolean')}&{_id:mongoose.SchemaTypes.ObjectId}>, {}>;`;
+        names += ` | '${item.name}'`;
+        results += ` T extends '${item.name}' ? ${item.name}Model :`;
+    }
+    names = names.replace('|', '=') + ';';
+    results += ' never;';
+    return `namespace ${namespace} {
+    import mongoose from 'mongoose';${types}
+    ${names}
+    ${results}
+}
+
+declare const Model: ${namespace}.${modelItem.name}Model;
+declare const importModel: <T extends ${namespace}.ModelName>(model: T, callback?: (Model: ${namespace}.ResultModel<T>) => void) => Promise<${namespace}.ResultModel<T>>;
+`;
 }
 </script>
 

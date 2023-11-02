@@ -12,6 +12,7 @@ type GridRow = Omit<API, '_id'> & { _id?: string };
 
 /** 模型缓存 */
 const modelCache = new Map<string, ModelItem>();
+const modelListCache = new Map<string, ModelItem[]>();
 
 /** 类型选择项 */
 const typeOptions = [
@@ -52,11 +53,12 @@ const loadModel: SelectOptionsLoad<GridRow> = (() => {
             return cache.get(module)!;
         }
         const list = await modelService.all(module);
+        const modelItemList: ModelItem[] = [];
+        modelListCache.set(module, modelItemList);
         const options = list.map((item) => {
-            modelCache.set(module + '#' + item.name, {
-                ...item,
-                schema: eval('(' + item.property + ')')
-            });
+            const modelItem: ModelItem = { ...item, schema: eval('(' + item.property + ')') };
+            modelCache.set(module + '#' + item.name, modelItem);
+            modelItemList.push(modelItem);
             return { label: item.name, value: item.name };
         });
         cache.set(module, options);
@@ -190,7 +192,11 @@ const gridProps: MoGridProps<GridRow> = {
                     const module = editDataRef.value.module;
                     const model = editDataRef.value.model;
                     const modelItem = modelCache.get(module + '#' + model);
-                    return { modelItem };
+                    if (!modelItem) {
+                        return {};
+                    }
+                    const modelItems = modelListCache.get(module);
+                    return { modelItem, modelItems };
                 },
                 visible: (editData) => editData.customize === 'true'
             },
