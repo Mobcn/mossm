@@ -24,8 +24,4 @@ namespace IMongoose {
     type IModel = mongoose.Model<{ [x: string]: any }, {}>;
 }
 
-declare const importModel: (
-    module: string,
-    model: string,
-    callback?: (Model: IMongoose.IModel) => void
-) => Promise<IMongoose.IModel>;
+declare const importModel: (model: string, callback?: (Model: IMongoose.IModel) => void) => Promise<IMongoose.IModel>;

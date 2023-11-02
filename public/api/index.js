@@ -85,7 +85,8 @@ export default function handler(request, response) {
                         verify: (token, ignoreExpiration) => _JWT.verify(token, findModule.secretKey, ignoreExpiration)
                     };
                     const textJS = '(Model, Result, JWT, importModel) => ' + findApi.handler;
-                    const preHander = eval(textJS)(Model, Result, JWT, importModel);
+                    const currentImportModel = (mod, cb) => importModel(module, mod, cb);
+                    const preHander = eval(textJS)(Model, Result, JWT, currentImportModel);
                     const { method: methods, authorized } = findApi;
                     const secretKey = authorized ? findModule.secretKey : undefined;
                     VHandler.config({ methods, secretKey }).build(preHander)(request, response);
