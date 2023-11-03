@@ -263,7 +263,7 @@ export type MoGridProps<T extends Record<string, any>> = {
                     @refresh="loadData(true)"
                 />
             </el-header>
-            <el-main class="pt-3">
+            <el-main class="pt-3 h-0">
                 <mo-table
                     ref="moTableRef"
                     v-bind="props.table"

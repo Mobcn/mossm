@@ -36,6 +36,7 @@ declare global {
   const isReactive: typeof import('vue')['isReactive']
   const isReadonly: typeof import('vue')['isReadonly']
   const isRef: typeof import('vue')['isRef']
+  const loadFileJSON: typeof import('../utils/load')['loadFileJSON']
   const loadFileText: typeof import('../utils/load')['loadFileText']
   const markRaw: typeof import('vue')['markRaw']
   const minify: typeof import('../utils/terser.js')['minify']

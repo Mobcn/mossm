@@ -4,8 +4,6 @@ import declareList from '@/assets/declare.json';
 import type { ModelItem } from '../MoAPI.vue';
 import type { EditorOptions, MonacoEditorInstance } from '@/components/editor/MonacoEditor.vue';
 
-type ExtraLibs = Record<string, { content: string; version: number }>;
-
 /** 参数 */
 const props = defineProps<{
     /** 宽度 */
@@ -50,7 +48,11 @@ const options = computed<EditorOptions>(() => ({
 onMounted(() => {
     monacoEditorRef.value!.useLanguages(async (languages) => {
         /** 添加扩展类型定义函数 */
-        const addExtraLib = buildAddExtraLib(languages);
+        const addExtraLib = (content: string, path: string) => {
+            // @ts-ignore
+            languages.typescript.javascriptDefaults.addExtraLib(content, path);
+        };
+
         // 设置扩展类型定义
         const addList = declareList.map(async (path) => {
             let content = storage.get('declare_cache@' + path);
@@ -67,8 +69,9 @@ onMounted(() => {
                 }
                 storage.set('declare_cache@' + path, content);
             }
-            addExtraLib(content, path, false);
+            addExtraLib(content, path);
         });
+
         Promise.all(addList).then(() => {
             // 根据模型更改更新类型扩展定义
             let currentModelItem: ModelItem | null | undefined = null;
@@ -83,69 +86,6 @@ onMounted(() => {
         });
     });
 });
-
-/**
- * 添加扩展定义函数构建函数
- *
- * @param languages 语言实例
- */
-function buildAddExtraLib(languages: typeof monaco.languages & { typescript?: any }) {
-    let typescript: any;
-    let worker: any;
-    let extraLibs: ExtraLibs;
-    let update: () => void | undefined;
-    const current = { exec: exec1 };
-    function exec1(content: string, filePath: string, isUpdate?: boolean) {
-        (typescript = languages.typescript) && (current.exec = exec2)(content, filePath, isUpdate);
-    }
-    function exec2(content: string, filePath: string, isUpdate?: boolean) {
-        (extraLibs = typescript.javascriptDefaults.getExtraLibs()) &&
-            (current.exec = exec3)(content, filePath, isUpdate);
-    }
-    async function exec3(content: string, filePath: string, isUpdate?: boolean) {
-        if (!('getJavaScriptWorker' in typescript)) {
-            append(content, filePath);
-            return;
-        }
-        (current.exec = exec4)(content, filePath, isUpdate);
-    }
-    async function exec4(content: string, filePath: string, isUpdate?: boolean) {
-        const getJavaScriptWorker = await typescript.getJavaScriptWorker();
-        if (!getJavaScriptWorker) {
-            append(content, filePath);
-            return;
-        }
-        worker = getJavaScriptWorker;
-        (current.exec = exec5)(content, filePath, isUpdate);
-    }
-    async function exec5(content: string, filePath: string, isUpdate?: boolean) {
-        const javaScriptWorker = await worker();
-        if (!javaScriptWorker) {
-            append(content, filePath);
-            return;
-        }
-        update = () => javaScriptWorker.updateExtraLibs(toRaw(extraLibs));
-        (current.exec = exec6)(content, filePath, isUpdate);
-    }
-    function exec6(content: string, filePath: string, isUpdate?: boolean) {
-        append(content, filePath);
-        isUpdate && update();
-    }
-    function append(content: string, filePath: string) {
-        const version = filePath in extraLibs ? extraLibs[filePath].version + 1 : 1;
-        extraLibs[filePath] = { content, version };
-    }
-    /**
-     * 添加扩展类型定义函数
-     *
-     * @param content 扩展类型定义文本内容
-     * @param filePath 文件路径
-     */
-    return (content: string, filePath: string, isUpdate?: boolean) => {
-        isUpdate === undefined && (isUpdate = true);
-        current.exec(content, filePath, isUpdate);
-    };
-}
 
 /**
  * 获取Model定义文本
