@@ -51,14 +51,14 @@ async function getContainer() {
  */
 async function loadMonaco() {
     // 编辑器VS引入路径
-    const editorVS = 'https://cdn.staticfile.org/monaco-editor/0.36.1/min/vs';
+    const editorVS = 'https://cdn.staticfile.org/monaco-editor/0.44.0/min/vs';
     // 编辑器Loader引入路径
     const editorLoader = editorVS + '/loader.js';
     // 导入monaco
     const res = await fetch(editorLoader);
     let textJS = await res.text();
-    textJS = textJS.replace('var h=do', '//var h=do');
-    textJS = textJS.replace('d(h)', 'd(h)\nfetch(r).then(d=>d.text()).then(t=>eval(t))');
+    textJS = textJS.replace('let l=do', '//let l=do');
+    textJS = textJS.replace('ld(l)', 'ld(l)\nfetch(i).then(d=>d.text()).then(t=>eval(t))');
     textJS = 'new Promise((rev) => ({\nexecFun: function () {\n' + textJS + ';\n';
     textJS += `this.require.config({paths:{vs:'${editorVS}'}});`;
     textJS += "this.require(['vs/editor/editor.main'],()=>rev(monaco));}}).execFun())";

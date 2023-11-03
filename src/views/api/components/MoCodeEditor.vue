@@ -72,11 +72,11 @@ onMounted(() => {
         Promise.all(addList).then(() => {
             // 根据模型更改更新类型扩展定义
             let currentModelItem: ModelItem | null | undefined = null;
-            watchEffect(() => {
+            watchEffect(async () => {
                 const params = props.params;
                 if (currentModelItem !== params?.modelItem) {
                     currentModelItem = params?.modelItem;
-                    const content = getModelDeclareText(currentModelItem, params!.modelItems);
+                    const content = await getModelDeclareText(currentModelItem, params?.modelItems);
                     addExtraLib(content, 'model.d.ts');
                 }
             });
@@ -153,38 +153,31 @@ function buildAddExtraLib(languages: typeof monaco.languages & { typescript?: an
  * @param modelItem 模型项
  * @param modelItems 模型项数组
  */
-function getModelDeclareText(modelItem?: ModelItem, modelItems?: ModelItem[]) {
+async function getModelDeclareText(modelItem?: ModelItem, modelItems?: ModelItem[]) {
     if (!modelItem) {
         return '';
     }
-    const namespace = modelItem.module.replace(/./, (i) => i.toUpperCase()) + 'Module';
-    let types = '';
+    const types: string[] = [];
     let names = 'type ModelName';
     let results = 'type ResultModel<T> =';
     for (const item of modelItems!) {
-        const arr: any = {};
-        for (const [key, value] of Object.entries<Function | { type: Function }>(item.schema)) {
-            arr[key] = 'type' in value ? value.type.name : value.name;
+        const { name, schema } = item;
+        const struct: any = {};
+        for (const [key, value] of Object.entries(schema)) {
+            const type = 'type' in value ? value.type.name : value.name;
+            struct[key] = /[SNB]/.test(type[0]) ? type.replace(/./, (i) => i.toLowerCase()) : type;
         }
-        types += `\n    type ${item.name}Model = mongoose.Model<${JSON.stringify(arr)
-            .replace(/"/g, '')
-            .replace(/String/g, 'string')
-            .replace(/Number/g, 'number')
-            .replace(/Boolean/g, 'boolean')}&{_id:mongoose.SchemaTypes.ObjectId}>, {}>;`;
-        names += ` | '${item.name}'`;
-        results += ` T extends '${item.name}' ? ${item.name}Model :`;
+        const structText = JSON.stringify(struct).replace(/"/g, '');
+        types.push(`type ${name}Model = mongoose.Model<${structText}&{_id:mongoose.SchemaTypes.ObjectId}>,{}>;`);
+        names += ` | '${name}'`;
+        results += ` T extends '${name}' ? ${name}Model :`;
     }
-    names = names.replace('|', '=') + ';';
-    results += ' never;';
-    return `namespace ${namespace} {
-    import mongoose from 'mongoose';${types}
-    ${names}
-    ${results}
-}
-
-declare const Model: ${namespace}.${modelItem.name}Model;
-declare const importModel: <T extends ${namespace}.ModelName>(model: T, callback?: (Model: ${namespace}.ResultModel<T>) => void) => Promise<${namespace}.ResultModel<T>>;
-`;
+    return (await loadFileText('/declare/template/model.d.ts'))
+        .replace(/\$\$namespace\$\$/g, modelItem.module.replace(/./, (i) => i.toUpperCase()) + 'Module')
+        .replace(/\$\$types\$\$/g, types.join('\n    '))
+        .replace(/\$\$names\$\$/g, names.replace('|', '=') + ';')
+        .replace(/\$\$results\$\$/g, results + ' never;')
+        .replace(/\$\$currentModelName\$\$/g, modelItem.name);
 }
 </script>
 

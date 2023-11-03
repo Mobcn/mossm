@@ -188,13 +188,13 @@ const gridProps: MoGridProps<GridRow> = {
                 component: MoCodeEditor,
                 height: 500,
                 placeholder: '请输入处理器',
-                params: (editDataRef) => {
+                params: async (editDataRef) => {
                     const module = editDataRef.value.module;
                     const model = editDataRef.value.model;
-                    const modelItem = modelCache.get(module + '#' + model);
-                    if (!modelItem) {
+                    if (!model) {
                         return {};
                     }
+                    const modelItem = await getModelItem(module, model);
                     const modelItems = modelListCache.get(module);
                     return { modelItem, modelItems };
                 },
@@ -222,7 +222,7 @@ const gridProps: MoGridProps<GridRow> = {
                     }
                     const module = editDataRef.value.module;
                     const modelItem = await getModelItem(module, model);
-                    const keys = Object.keys(modelItem.schema);
+                    const keys = ['_id', ...Object.keys(modelItem.schema)];
                     return keys.map((item) => ({ label: item, value: item }));
                 }
             },

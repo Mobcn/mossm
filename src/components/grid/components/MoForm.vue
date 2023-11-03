@@ -99,7 +99,26 @@ const loadOptions = (() => {
  *
  * @param params 参数函数
  */
-const loadParams = (params: (editDataRef: Ref<EditData<T>>) => any) => params(formData);
+const loadParams = (() => {
+    const paramsCache = new Map<CustomParamsLoad<T>, [Record<string, any> | any[] | undefined]>();
+    return (params?: Record<string, any> | any[] | CustomParamsLoad<T>) => {
+        if (params === undefined || typeof params === 'object') {
+            return [params];
+        }
+        if (!paramsCache.has(params)) {
+            const reactiveArray = reactive<[Record<string, any> | any[] | undefined]>([undefined]);
+            const isContinue = { value: true };
+            paramsCache.set(params, reactiveArray);
+            watchEffect(async () => {
+                if (isContinue.value) {
+                    const res = params(formData, isContinue);
+                    reactiveArray[0] = await Promise.resolve(res);
+                }
+            });
+        }
+        return paramsCache.get(params)!;
+    };
+})();
 
 /**
  * 获取组件宽度样式
@@ -172,6 +191,14 @@ export type SelectOptionsLoad<T extends Record<string, any>> = (
 ) => SelectItem[] | Promise<SelectItem[]>;
 
 /**
+ * 自定义组件参数加载函数
+ */
+export type CustomParamsLoad<T extends Record<string, any>> = (
+    editDataRef: Ref<EditData<T>>,
+    isContinue: { value: boolean }
+) => Record<string, any> | any[] | Promise<Record<string, any> | any[] | undefined> | undefined;
+
+/**
  * 表单组件项
  */
 export type MoFormComponent<T extends Record<string, any>> = {
@@ -240,7 +267,7 @@ export type MoFormComponent<T extends Record<string, any>> = {
           /** 高度 */
           height?: number | string;
           /** 参数 */
-          params?: (editDataRef: Ref<EditData<T>>) => any;
+          params?: Record<string, any> | any[] | CustomParamsLoad<T>;
       }
 );
 
@@ -310,7 +337,7 @@ export type MoFormInstance<T> = ComponentPublicInstance<
         :size="(props as any).size"
         :label-width="(props as any).labelWidth"
     >
-        <template v-for="component in (props as any).components">
+        <template v-for="component in ((props as any).components as MoFormComponent<T>[])">
             <el-form-item
                 v-if="component.name !== primaryKey"
                 v-show="!component.visible || component.visible(stringFormData)"
@@ -390,7 +417,7 @@ export type MoFormInstance<T> = ComponentPublicInstance<
                     v-else-if="component.type === 'custom'"
                     :is="component.component"
                     v-model="formData[component.name]"
-                    :params="component.params && loadParams(component.params)"
+                    :params="loadParams(component.params)[0]"
                     :size="component.size"
                     :width="component.width"
                     :height="component.height"
