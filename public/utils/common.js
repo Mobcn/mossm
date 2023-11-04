@@ -1,3 +1,5 @@
+import { Buffer } from 'node:buffer';
+
 /**
  * 生成随机字符串
  *
