@@ -62,7 +62,8 @@ class ModelService extends BaseService {
         if (findModel) {
             throw new Error('该模型已存在');
         }
-        ModelService.getModuleDAO().then((moduleDAO) => moduleDAO.insert({ name: module }));
+        const moduleDAO = await ModelService.getModuleDAO();
+        moduleDAO.insert({ name: module });
         return await this.DAO.insert({ module, name, table, property });
     }
 
@@ -90,24 +91,28 @@ class ModelService extends BaseService {
         // 删除模型
         const result = await this.DAO.deleteById(findModels.map((item) => item._id));
 
-        // 删除模型对应的表
-        for (const { module, table } of findModels) {
-            const tableName = (module + '_' + table).toLowerCase();
-            mongoose.connection.db.dropCollection(tableName);
-        }
-        // 删除不存在模型的模块
-        const modules = Array.from(new Set(findModels.map((item) => item.module)));
-        const promiseList = modules.map(async (module) => {
-            const isExist = await this.DAO.exists({ module });
-            return [module, isExist];
-        });
-        Promise.all(promiseList).then(async (res) => {
-            const emptyModules = res.filter((item) => !item[1]).map((item) => item[0]);
-            if (emptyModules.length > 0) {
-                const moduleDAO = await ModelService.getModuleDAO();
-                moduleDAO.deleteByName(emptyModules);
-            }
-        });
+        await Promise.all([
+            // 删除模型对应的表
+            Promise.all(
+                findModels.map(async ({ module, table }) => {
+                    const tableName = (module + '_' + table).toLowerCase();
+                    await mongoose.connection.db.dropCollection(tableName);
+                })
+            ),
+            // 删除不存在模型的模块
+            Promise.all(
+                Array.from(new Set(findModels.map((item) => item.module))).map(async (module) => {
+                    const isExist = await this.DAO.exists({ module });
+                    return [module, isExist];
+                })
+            ).then(async (res) => {
+                const emptyModules = res.filter((item) => !item[1]).map((item) => item[0]);
+                if (emptyModules.length > 0) {
+                    const moduleDAO = await ModelService.getModuleDAO();
+                    await moduleDAO.deleteByName(emptyModules);
+                }
+            })
+        ]);
 
         return result;
     }
