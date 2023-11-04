@@ -18,6 +18,11 @@ const props = withDefaults(
     }
 );
 
+/** 回调 */
+const emits = defineEmits<{
+    save: [];
+}>();
+
 /** 编辑器容器 */
 const editorContainer = ref<HTMLDivElement>();
 /** 当前的monaco对象 */
@@ -103,11 +108,19 @@ async function initMonaco() {
  * @param editor 编辑器实例
  */
 function registerAction($monaco: typeof monaco, editor: monaco.editor.IStandaloneCodeEditor) {
-    // 自定义全屏Action，Ctrl + Shift + F
+    // 自定义保存，Ctrl + S
+    editor.addAction({
+        id: 'save',
+        label: '保存',
+        keybindings: [$monaco.KeyMod.CtrlCmd | $monaco.KeyCode.KeyS],
+        contextMenuGroupId: 'navigation',
+        run: () => (emits('save'), void 0)
+    });
+    // 自定义全屏Action，Ctrl + Q
     editor.addAction({
         id: 'fullScreen',
         label: '全屏/关闭全屏',
-        keybindings: [$monaco.KeyMod.CtrlCmd | $monaco.KeyMod.Shift | $monaco.KeyCode.KeyF],
+        keybindings: [$monaco.KeyMod.CtrlCmd | $monaco.KeyCode.KeyQ],
         contextMenuGroupId: 'navigation',
         run: () => ((isFullScreen.value = !isFullScreen.value), void 0)
     });
