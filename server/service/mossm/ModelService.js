@@ -63,7 +63,7 @@ class ModelService extends BaseService {
             throw new Error('该模型已存在');
         }
         const moduleDAO = await ModelService.getModuleDAO();
-        moduleDAO.insert({ name: module });
+        await moduleDAO.insert({ name: module });
         return await this.DAO.insert({ module, name, table, property });
     }
 
