@@ -7,8 +7,10 @@ const databaseName = 'mossm';
 /** 数据库连接地址 */
 let uri;
 
-/** @type {mongoose | undefined} */
-let cache;
+/** 连接计数 */
+let count = 0;
+/** 数据库连接Promise对象 */
+let connectPromise;
 
 /**
  * 获取数据库连接地址
@@ -32,25 +34,22 @@ const MongoDB = {
     /**
      * 打开数据库连接
      *
-     * @param {(mongo: typeof mongoose) => void}  callback 连接回调
+     * @param {((mongo: typeof mongoose) => void) | boolean} callbackOrIsAdd 连接回调或是否增加连接数
+     * @param {boolean} isAdd 是否增加连接数
      */
-    connect: async (callback) => {
-        if (!cache) {
-            cache = await mongoose.connect(uri || (uri = getURI()));
-        } else if (cache.connection.readyState !== cache.STATES.connected) {
-            if (cache.connection.readyState === cache.STATES.disconnected) {
-                cache.connection.openUri(uri || (uri = getURI()));
-            }
-            await new Promise((resolve) => cache.connection.once('connected', resolve));
-        }
-        callback && callback(cache);
-        return cache;
+    connect: async (callbackOrIsAdd = false, isAdd = false) => {
+        const coi = typeof callbackOrIsAdd;
+        const $isAdd = coi === 'boolean' ? callbackOrIsAdd : isAdd;
+        $isAdd && ++count === 1 && (connectPromise = mongoose.connect(uri || (uri = getURI())));
+        await connectPromise;
+        coi === 'function' && callbackOrIsAdd(mongoose);
+        return mongoose;
     },
 
     /**
      * 关闭数据库
      */
-    disconnect: () => cache?.connection.close()
+    disconnect: async () => --count === 0 && mongoose.connection.close()
 };
 
 export default MongoDB;

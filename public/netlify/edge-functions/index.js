@@ -1,5 +1,4 @@
 import entry from '../../api/index.js';
-import DB from '../../dao/database/db.js';
 import staticDirs from '../../config/static.js';
 import { createVercelRequest, createVercelResponse } from '../utils/convert.js';
 
@@ -12,16 +11,9 @@ import { createVercelRequest, createVercelResponse } from '../utils/convert.js';
  */
 export default async (request, context) => {
     return new Promise(async (resolve) => {
-        try {
-            const vercelRequest = await createVercelRequest(request, context);
-            const vercelResponse = createVercelResponse((value) => {
-                DB.disconnect();
-                resolve(value);
-            });
-            entry(vercelRequest, vercelResponse);
-        } catch (e) {
-            DB.disconnect();
-        }
+        const vercelRequest = await createVercelRequest(request, context);
+        const vercelResponse = createVercelResponse(resolve);
+        entry(vercelRequest, vercelResponse);
     });
 };
 

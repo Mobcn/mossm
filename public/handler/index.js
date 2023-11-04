@@ -1,4 +1,3 @@
-import DB from '../dao/database/db.js';
 import ENV from './env.js';
 import JWT from './jwt.js';
 import Result from './result.js';
@@ -162,7 +161,6 @@ class VHandler {
                 return;
             }
             new Promise(async (resolve, reject) => {
-                await DB.connect();
                 Promise.resolve(controller(params, request, response))
                     .then((result) => {
                         response.status(200);

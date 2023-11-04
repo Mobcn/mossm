@@ -56,48 +56,43 @@ async function importModel(module, model, callback) {
  */
 export default function handler(request, response) {
     const { pathname } = new URL(request.url, 'http://' + request.headers.host);
+    DB.connect(true);
     if (Object.keys(router).includes(pathname)) {
         router[pathname]()
             .then(({ default: handler }) => handler(request, response))
-            .catch((error) => response.status(500).end(error.message));
-    } else {
-        const paths = pathname.split('/');
-        if (paths.length < 4) {
-            response.status(404).end();
-            return;
-        }
-        const module = paths[1];
-        const model = paths[2][0].toUpperCase() + paths[2].substring(1);
-        const path = '/' + paths.slice(3).join('/');
-        DB.connect(
-            () =>
-                Promise.all([
-                    apiService.DAO.get({ module, model, path, status: true }),
-                    moduleService.getByName(module),
-                    importModel(module, model)
-                ])
-                    .then(([findApi, findModule, Model]) => {
-                        if (!findApi || !findModule || !Model) {
-                            response.status(404).end();
-                            return;
-                        }
-                        const Models = new Proxy({}, { get: (_, key) => (cb) => importModel(module, key, cb) });
-                        const moduleKey = findModule.secretKey;
-                        const sign = (data, expiresIn) => _JWT.sign(data, moduleKey, expiresIn);
-                        const verify = (token, ignoreExpiration) => _JWT.verify(token, moduleKey, ignoreExpiration);
-                        const JWT = { sign, verify };
-                        const preHander = eval(`(Model,Models,Result,JWT)=>${findApi.handler}`)(
-                            Model,
-                            Models,
-                            Result,
-                            JWT
-                        );
-                        const { method: methods, authorized } = findApi;
-                        const secretKey = authorized ? moduleKey : undefined;
-                        VHandler.config({ methods, secretKey }).build(preHander)(request, response);
-                    })
-                    .catch((error) => response.status(500).end(error.message)),
-            true
-        );
+            .catch((error) => response.status(500).end(error.message))
+            .finally(() => DB.disconnect());
+        return;
     }
+    const paths = pathname.split('/');
+    if (paths.length < 4) {
+        response.status(404).end();
+        DB.disconnect();
+        return;
+    }
+    const module = paths[1];
+    const model = paths[2][0].toUpperCase() + paths[2].substring(1);
+    const path = '/' + paths.slice(3).join('/');
+    Promise.all([
+        apiService.DAO.get({ module, model, path, status: true }),
+        moduleService.getByName(module),
+        importModel(module, model)
+    ])
+        .then(([findApi, findModule, Model]) => {
+            if (!findApi || !findModule || !Model) {
+                response.status(404).end();
+                return;
+            }
+            const Models = new Proxy({}, { get: (_, key) => (cb) => importModel(module, key, cb) });
+            const moduleKey = findModule.secretKey;
+            const sign = (data, expiresIn) => _JWT.sign(data, moduleKey, expiresIn);
+            const verify = (token, ignoreExpiration) => _JWT.verify(token, moduleKey, ignoreExpiration);
+            const JWT = { sign, verify };
+            const preHander = eval(`(Model,Models,Result,JWT)=>${findApi.handler}`)(Model, Models, Result, JWT);
+            const { method: methods, authorized } = findApi;
+            const secretKey = authorized ? moduleKey : undefined;
+            VHandler.config({ methods, secretKey }).build(preHander)(request, response);
+        })
+        .catch((error) => response.status(500).end(error.message))
+        .finally(() => DB.disconnect());
 }

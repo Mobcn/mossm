@@ -1,5 +1,3 @@
-import DB from '../../dao/database/db.js';
-
 /** @typedef {import("../edge-functions/index").Context} Context 请求上下文 */
 
 /**
@@ -151,8 +149,7 @@ function createVercelResponse(resolve) {
          *
          * @param {BodyInit} body 响应体
          */
-        send: async (body) => {
-            await DB.disconnect();
+        send: (body) => {
             resolve(new Response(body, { status: _status, headers: _headers }));
         },
 
@@ -161,9 +158,8 @@ function createVercelResponse(resolve) {
          *
          * @param {Record<string, any> | Array<any>} body 响应JSON对象
          */
-        json: async function (body) {
-            const count = await DB.disconnect();
-            body = JSON.stringify({ ...body, count });
+        json: function (body) {
+            body = JSON.stringify(body);
             this.setHeader('Content-Type', 'application/json');
             resolve(new Response(body, { status: _status, headers: _headers }));
         },
@@ -173,8 +169,7 @@ function createVercelResponse(resolve) {
          *
          * @param {string} chunk 响应消息
          */
-        end: async (chunk) => {
-            await DB.disconnect();
+        end: (chunk) => {
             resolve(new Response(chunk, { status: _status, headers: _headers }));
         },
 
