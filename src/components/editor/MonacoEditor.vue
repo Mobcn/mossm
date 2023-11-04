@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { loadWASM, Registry, wireTmGrammars } from '@/plugins/monaco-with-textmate';
-import darkPlusTheme from '@/assets/theme/dark-plus.json';
-import lightPlusTheme from '@/assets/theme/light-plus.json';
+import { loadFileJSON, loadFileArrayBuffer } from '@/utils/load';
+import config from '@/assets/monaco/config.json';
+import extensions from '@/assets/monaco/extensions.json';
+import darkPlusTheme from '@/assets/monaco/theme/dark-plus.json';
+import lightPlusTheme from '@/assets/monaco/theme/light-plus.json';
 
 /** 参数 */
 const props = withDefaults(
     defineProps<{
-        /** Monaco编辑器配置 */
+        /** monaco编辑器配置 */
         options: EditorOptions;
         /** 宽度 */
         width?: number | string;
@@ -20,67 +23,117 @@ const props = withDefaults(
 );
 
 /** 编辑器容器 */
-const editorContainer = ref<HTMLIFrameElement>();
-
-/** MonacoLanguages对象 */
-const monacoLanguages = ref<typeof monaco.languages>();
+const editorContainer = ref<HTMLDivElement>();
+/** 当前的monaco对象 */
+const currentMonaco = ref<typeof monaco>();
 /** 编辑器实例对象 */
 const editorInstance = ref<monaco.editor.IStandaloneCodeEditor>();
-
-// 是否加载了textmeta
-let isLoadTextmeta = false;
+/** 是否加载了textmeta */
+const isLoadTextmeta = ref(false);
 
 /** 代码文本 */
 const codeText = defineModel<string>({ required: true });
 /** 配置 */
 const options = computed(() => {
     const $options = { ...props.options };
-    if (isLoadTextmeta) {
-        $options.theme = $options.theme === 'vs' ? 'light-plus' : 'dark-plus';
+    if (isLoadTextmeta.value) {
+        if ($options.theme === 'vs') {
+            $options.theme = 'light-plus';
+        } else if ($options.theme === 'vs-dark') {
+            $options.theme = 'dark-plus';
+        }
     }
     return $options;
 });
 
-onMounted(() => {
-    const { contentWindow, contentDocument } = editorContainer.value!;
-    const subWindow = contentWindow! as any;
-    const subDocument = contentDocument!;
-    subDocument.body.style.overflow = 'hidden';
-    subDocument.body.style.margin = '0';
-    subDocument.body.style.padding = '0';
-    // 编辑器VS导入路径
-    const editorVS = 'https://cdn.staticfile.org/monaco-editor/0.44.0/min/vs';
-    // 编辑器Loader导入路径
-    const editorLoader = editorVS + '/loader.js';
-    // 导入Monaco
-    const loaderScript = subDocument.createElement('script');
-    loaderScript.type = 'text/javascript';
-    loaderScript.src = editorLoader;
-    loaderScript.onload = () => {
-        subWindow.require.config({ paths: { vs: editorVS } });
-        subWindow.require(['vs/editor/editor.main'], function () {
-            // monaco对象
-            const $monaco: typeof monaco = this.monaco;
-            // 创建编辑器实例
-            const instance = $monaco.editor.create(subDocument.body, { ...options.value, value: codeText.value });
-            // 监听设置修改
-            watch(options, (value) => instance.updateOptions(value));
-            // 监听内容修改
-            watch(codeText, (value) => !instance.hasTextFocus() && instance.setValue(value));
-            // 编辑器内容修改监听
-            instance.onDidChangeModelContent(() => (codeText.value = instance.getValue()));
-            // 设置实例
-            editorInstance.value = instance;
-            // 设置MonacoLanguages对象
-            monacoLanguages.value = $monaco.languages;
-            // JavaScript使用textmeta语法分析器
-            if (options.value.language === 'javascript') {
-                useJSTextMeta($monaco, instance);
-            }
-        });
-    };
-    subDocument.body.appendChild(loaderScript);
+/** 是否为全屏 */
+const isFullScreen = ref(false);
+/** 当前编辑器容器样式 */
+const currentStyle = computed(() => {
+    if (isFullScreen.value) {
+        return 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000;';
+    }
+    return `width: ${getStyleSize(props.width)}; height: ${getStyleSize(props.height)}`;
 });
+
+// 挂载完成后事件
+onMounted(() => {
+    // 调用 monaco loader
+    const loader = document.createElement('script');
+    loader.type = 'text/javascript';
+    loader.src = config.vs + '/loader.js';
+    loader.onload = initMonaco;
+    document.head.appendChild(loader);
+});
+
+/**
+ * 初始化monaco
+ */
+async function initMonaco() {
+    // 加载monaco对象
+    const require = window.require!;
+    require.config({ paths: { vs: config.vs } });
+    await new Promise((resolve) => require(['vs/editor/editor.main'], resolve));
+    const $monaco = (currentMonaco.value = window.monaco);
+    // 创建编辑器实例
+    const domElement = editorContainer.value!;
+    const $options = { ...options.value, value: codeText.value };
+    const instance = (editorInstance.value = $monaco.editor.create(domElement, $options));
+    // 使用textmeta语法分析器
+    useJSTextMeta($monaco, instance);
+    // 注册Action
+    registerAction($monaco, instance);
+    // 监听设置修改
+    watch(options, (value) => instance.updateOptions(value));
+    // 监听内容修改
+    watch(codeText, (value) => !instance.hasTextFocus() && instance.setValue(value));
+    // 编辑器内容修改监听
+    instance.onDidChangeModelContent(() => (codeText.value = instance.getValue()));
+}
+
+/**
+ * 注册Action
+ *
+ * @param $monaco monaco对象
+ * @param editor 编辑器实例
+ */
+function registerAction($monaco: typeof monaco, editor: monaco.editor.IStandaloneCodeEditor) {
+    // 自定义全屏Action，Ctrl + F
+    editor.addAction({
+        id: 'fullScreen',
+        label: '全屏/关闭全屏',
+        keybindings: [$monaco.KeyMod.CtrlCmd | $monaco.KeyCode.KeyF],
+        contextMenuGroupId: 'navigation',
+        run: () => ((isFullScreen.value = !isFullScreen.value), void 0)
+    });
+}
+
+/**
+ * 获取语法定义
+ *
+ * @param scopeName 作用域名称
+ */
+async function getGrammarDefinition(scopeName: string) {
+    const source = extensions.sources.find((source) => source.scopeName === scopeName);
+    if (!source) {
+        throw new Error(`Unknown scope name: ${scopeName}`);
+    }
+    const path = extensions.path + source.path;
+    const cacheKey = 'grammar_definitio_cache@' + path;
+    let content = await storage.get<object>(cacheKey);
+    content ??= await storage.set<object>(cacheKey, await loadFileJSON(path));
+    return { format: 'json' as 'json', content };
+}
+
+/**
+ * 加载 Onigasm WASM 文件
+ */
+async function loadOnigasmWASM() {
+    const cacheKey = 'onigasm_wasm_cache@' + extensions.onigasmWASM;
+    let data = await storage.get<ArrayBuffer>(cacheKey);
+    data ??= await storage.set<ArrayBuffer>(cacheKey, await loadFileArrayBuffer(extensions.onigasmWASM));
+    await loadWASM(data);
+}
 
 /**
  * 使用textmeta语法分析器
@@ -88,29 +141,19 @@ onMounted(() => {
  * @param $monaco monaco对象
  * @param editor 编辑器实例
  */
-function useJSTextMeta($monaco: typeof monaco, editor: monaco.editor.IStandaloneCodeEditor) {
-    const cnd = 'https://cdn.jsdelivr.net/gh/';
-    const jsu = cnd + 'microsoft/vscode/extensions/javascript/syntaxes/JavaScript.tmLanguage.json';
-    const onigasmURL = 'https://registry.npmmirror.com/onigasm/2.2.5/files/lib/onigasm.wasm';
-    // 添加主题
+async function useJSTextMeta($monaco: typeof monaco, editor: monaco.editor.IStandaloneCodeEditor) {
+    // 加载 Onigasm WASM 文件
+    await loadOnigasmWASM();
+    // 添加textmeta主题
     $monaco.editor.defineTheme('light-plus', lightPlusTheme as monaco.editor.IStandaloneThemeData);
     $monaco.editor.defineTheme('dark-plus', darkPlusTheme as monaco.editor.IStandaloneThemeData);
-    // 加载TextMeta
-    Promise.all([loadWASM(onigasmURL), loadFileJSON(jsu)]).then(async ([_, content]) => {
-        const registry = new Registry({
-            getGrammarDefinition: async (scopeName: string) => {
-                if (scopeName !== 'source.js') {
-                    throw new Error(`Unknown scope name: ${scopeName}`);
-                }
-                return { format: 'json', content };
-            }
-        });
-        const grammars = new Map([['javascript', 'source.js']]);
-        $monaco.languages.register({ id: 'javascript' });
-        await wireTmGrammars($monaco, registry, grammars, editor);
-        $monaco.editor.setTheme(props.options.theme === 'vs' ? 'light-plus' : 'dark-plus');
-        isLoadTextmeta = true;
-    });
+    // textmeta语法注册器
+    const registry = new Registry({ getGrammarDefinition });
+    // textmeta语法定义Map
+    const grammars = new Map([['javascript', 'source.js']]);
+    // 关联
+    await wireTmGrammars($monaco, registry, grammars, editor);
+    isLoadTextmeta.value = true;
 }
 
 /**
@@ -124,19 +167,39 @@ function getStyleSize(value: number | string) {
 
 defineExpose({
     /**
-     * 使用MonacoLanguages对象
+     * 使用monaco对象
      */
-    useLanguages: (() => {
-        const cache: ((languages: typeof monaco.languages) => void)[] = [];
-        const stop = watch(monacoLanguages, (languages) => {
-            if (languages) {
+    useMonaco: (() => {
+        const cache: (($monaco: typeof monaco) => void)[] = [];
+        const stop = watch(currentMonaco, ($monaco) => {
+            if ($monaco) {
                 stop();
-                cache.forEach((cb) => cb(languages));
+                cache.forEach((cb) => cb($monaco));
             }
         });
-        return (cb: (languages: typeof monaco.languages) => void) => {
-            if (monacoLanguages.value) {
-                cb(monacoLanguages.value);
+        return (cb: ($monaco: typeof monaco) => void) => {
+            if (currentMonaco.value) {
+                cb(currentMonaco.value);
+            } else {
+                cache.push(cb);
+            }
+        };
+    })(),
+
+    /**
+     * 使用编辑器实例对象
+     */
+    useEditor: (() => {
+        const cache: ((editor: monaco.editor.IStandaloneCodeEditor) => void)[] = [];
+        const stop = watch(editorInstance, (editor) => {
+            if (editor) {
+                stop();
+                cache.forEach((cb) => cb(editor));
+            }
+        });
+        return (cb: (editor: monaco.editor.IStandaloneCodeEditor) => void) => {
+            if (editorInstance.value) {
+                cb(editorInstance.value);
             } else {
                 cache.push(cb);
             }
@@ -208,22 +271,24 @@ export type MonacoEditorInstance = ComponentPublicInstance<
     {},
     {
         /**
-         * 使用MonacoLanguages对象
+         * 使用monaco对象
          */
-        useLanguages: (cb: (languages: typeof monaco.languages) => void) => void;
+        useMonaco: (cb: ($monaco: typeof monaco) => void) => void;
+
+        /**
+         * 使用编辑器实例对象
+         */
+        useEditor: (cb: (editor: monaco.editor.IStandaloneCodeEditor) => void) => void;
     }
 >;
 </script>
 
 <template>
-    <iframe
-        ref="editorContainer"
-        :style="`width: ${getStyleSize(props.width)}; height: ${getStyleSize(props.height)}`"
-    />
+    <div ref="editorContainer" :style="currentStyle" />
 </template>
 
 <style scoped>
-iframe {
+div {
     border: 1px solid #ccc;
 }
 </style>

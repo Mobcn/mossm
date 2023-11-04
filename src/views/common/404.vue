@@ -1,11 +1,15 @@
 <script setup lang="ts">
 // 404图片路径
-const _404ImagePath = storage.get('_404ImageURL') || '/img/404.png';
+const _404ImagePath = ref('');
 
 /**
  * 跳转首页
  */
 const goHome = () => (window.location.href = '/');
+
+(async () => {
+    _404ImagePath.value = (await storage.get('_404ImageURL')) || '/img/404.png';
+})();
 </script>
 
 <template>

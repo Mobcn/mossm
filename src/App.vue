@@ -20,15 +20,15 @@ async function changePage(page: Promise<{ default: Component }> | Component) {
 provide('changePage', changePage);
 
 // 初始化操作
-(() => {
+(async () => {
     // 设置环境变量
     window.process ??= { env: { VUE_APP_ENV: 'production' } };
 
     // 设置主题
-    storage.get('mo-theme') === 'dark' && (store.theme = 'dark');
+    (await storage.get('mo-theme')) === 'dark' && (store.theme = 'dark');
 
     try {
-        if (storage.get('token')) {
+        if (await storage.get('token')) {
             changePage(import('@/views/dashboard/MoDashboard.vue'));
         } else {
             changePage(import('@/views/common/Login.vue'));

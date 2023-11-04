@@ -39,6 +39,13 @@ export default defineConfig(({ mode }) => {
             Unocss(),
             importToCDN({
                 modules: [
+                    // LocalForage
+                    {
+                        name: 'localforage',
+                        var: 'localForage',
+                        path: `https://cdn.staticfile.org/localforage/1.10.0/localforage.min.js`
+                    },
+
                     // Vue
                     {
                         name: 'vue',

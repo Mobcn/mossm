@@ -1,3 +1,5 @@
+import localforage from 'localforage';
+
 /**
  * 封装storage
  */
@@ -8,13 +10,7 @@ export default {
      * @param key 键
      * @param value 值
      */
-    set: (key: string, value: any) => {
-        if (typeof value === 'string') {
-            localStorage.setItem(key, value);
-        } else {
-            localStorage.setItem(key, JSON.stringify(value));
-        }
-    },
+    set: async <T = string>(key: string, value: any) => localforage.setItem<T>(key, value),
 
     /**
      * 获取键对应数据
@@ -22,21 +18,7 @@ export default {
      * @param key 键
      * @returns 值
      */
-    get: (key: string) => localStorage.getItem(key),
-
-    /**
-     * 获取键对应对象
-     *
-     * @param key
-     * @returns 值
-     */
-    getObject: (key: string) => {
-        const value = localStorage.getItem(key);
-        if (value && value !== 'undefined' && value !== 'null') {
-            return JSON.parse(value);
-        }
-        return value;
-    },
+    get: async <T = string>(key: string) => localforage.getItem<T>(key),
 
     /**
      * 删除键对应数据
@@ -44,5 +26,5 @@ export default {
      * @param key
      * @returns
      */
-    remove: (key: string) => localStorage.removeItem(key)
+    remove: async (key: string) => localforage.removeItem(key)
 };

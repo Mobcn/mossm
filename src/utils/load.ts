@@ -1,4 +1,14 @@
 /**
+ * 导入文件ArrayBuffer
+ *
+ * @param filePath 文件路径
+ */
+export async function loadFileArrayBuffer(filePath: string) {
+    const res = await fetch(filePath);
+    return res.arrayBuffer();
+}
+
+/**
  * 导入文件文本
  *
  * @param filePath 文件路径

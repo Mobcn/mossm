@@ -46,7 +46,7 @@ const options = computed<EditorOptions>(() => ({
 }));
 
 onMounted(() => {
-    monacoEditorRef.value!.useLanguages(async (languages) => {
+    monacoEditorRef.value!.useMonaco(async ({ languages }) => {
         /** 添加扩展类型定义函数 */
         const addExtraLib = (content: string, path: string) => {
             // @ts-ignore
@@ -55,7 +55,7 @@ onMounted(() => {
 
         // 设置扩展类型定义
         const addList = declareList.map(async (path) => {
-            let content = storage.get('declare_cache@' + path);
+            let content = await storage.get('declare_cache@' + path);
             if (!content) {
                 const text = await loadFileText(path);
                 if (text.indexOf('declare module') !== -1 || !path.startsWith('http')) {

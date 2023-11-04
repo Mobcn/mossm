@@ -11,8 +11,8 @@ const service = FetchService.create({
 });
 
 // 请求拦截器
-service.addRequestInterceptor((_url, options) => {
-    const token = storage.get('token');
+service.addRequestInterceptor(async (_url, options) => {
+    const token = await storage.get('token');
     if (token) {
         // 配置登录认证token
         options.headers = new Headers(options.headers);
