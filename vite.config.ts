@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
                     // LocalForage
                     {
                         name: 'localforage',
-                        var: 'localForage',
+                        var: 'localforage',
                         path: `https://cdn.staticfile.org/localforage/1.10.0/localforage.min.js`
                     },
 
