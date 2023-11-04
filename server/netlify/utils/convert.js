@@ -44,7 +44,7 @@ async function createBody(request) {
         try {
             return await request.json();
         } catch (_err) {}
-    } else if (contentType.startsWith('application/x-www-form-urlencoded')) {
+    } else if (contentType.startsWith('multipart/form-data')) {
         try {
             const formData = await request.formData();
             const body = {};
