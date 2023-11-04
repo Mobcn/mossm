@@ -9,7 +9,7 @@ let uri;
 
 /** @type {mongoose | undefined} */
 let cache;
-
+let count = 1;
 /**
  * 获取数据库连接地址
  */
@@ -34,7 +34,7 @@ const MongoDB = {
      *
      * @param {(mongo: typeof mongoose) => void}  callback 连接回调
      */
-    connect: async (callback) => {
+    connect: async (callback, isAdd = false) => {
         if (!cache) {
             cache = await mongoose.connect(uri || (uri = getURI()));
         } else if (cache.connection.readyState !== cache.STATES.connected) {
@@ -44,13 +44,17 @@ const MongoDB = {
             await new Promise((resolve) => cache.connection.once('connected', resolve));
         }
         callback && callback(cache);
+        isAdd && count++;
         return cache;
     },
 
     /**
      * 关闭数据库
      */
-    disconnect: () => cache?.connection.close()
+    disconnect: () => {
+        cache?.connection.close();
+        return count;
+    }
 };
 
 export default MongoDB;

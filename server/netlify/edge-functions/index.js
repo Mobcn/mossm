@@ -14,13 +14,13 @@ export default async (request, context) => {
     return new Promise(async (resolve) => {
         try {
             const vercelRequest = await createVercelRequest(request, context);
-            const vercelResponse = createVercelResponse((value) => {
-                DB.disconnect();
+            const vercelResponse = createVercelResponse(async (value) => {
                 resolve(value);
             });
             entry(vercelRequest, vercelResponse);
         } catch (e) {
-            DB.disconnect();
+            const count = await DB.disconnect();
+            return new Response('count:' + count);
         }
     });
 };
