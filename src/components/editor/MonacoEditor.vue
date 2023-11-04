@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { loadWASM, Registry, wireTmGrammars } from '@/plugins/monaco-with-textmate';
 import { loadFileJSON, loadFileArrayBuffer } from '@/utils/load';
-import config from '@/assets/monaco/config.json';
-import extensions from '@/assets/monaco/extensions.json';
-import darkPlusTheme from '@/assets/monaco/theme/dark-plus.json';
-import lightPlusTheme from '@/assets/monaco/theme/light-plus.json';
 
 /** 参数 */
 const props = withDefaults(
@@ -56,12 +52,21 @@ const currentStyle = computed(() => {
     return `width: ${getStyleSize(props.width)}; height: ${getStyleSize(props.height)}`;
 });
 
+// 加载monaco相关配置
+const config = ref<any>();
+const extensions = ref<any>();
+const darkPlusTheme = ref<any>();
+const lightPlusTheme = ref<any>();
+const loadPromise = loadMonacoConfigJSON();
+
 // 挂载完成后事件
-onMounted(() => {
+onMounted(async () => {
+    // 等待monaco相关配置加载完成
+    await loadPromise;
     // 调用 monaco loader
     const loader = document.createElement('script');
     loader.type = 'text/javascript';
-    loader.src = config.vs + '/loader.js';
+    loader.src = config.value.vs + '/loader.js';
     loader.onload = initMonaco;
     document.head.appendChild(loader);
 });
@@ -72,7 +77,7 @@ onMounted(() => {
 async function initMonaco() {
     // 加载monaco对象
     const require = window.require!;
-    require.config({ paths: { vs: config.vs } });
+    require.config({ paths: { vs: config.value.vs } });
     await new Promise((resolve) => require(['vs/editor/editor.main'], resolve));
     const $monaco = (currentMonaco.value = window.monaco);
     // 创建编辑器实例
@@ -98,11 +103,11 @@ async function initMonaco() {
  * @param editor 编辑器实例
  */
 function registerAction($monaco: typeof monaco, editor: monaco.editor.IStandaloneCodeEditor) {
-    // 自定义全屏Action，Ctrl + F
+    // 自定义全屏Action，Ctrl + Shift + F
     editor.addAction({
         id: 'fullScreen',
         label: '全屏/关闭全屏',
-        keybindings: [$monaco.KeyMod.CtrlCmd | $monaco.KeyCode.KeyF],
+        keybindings: [$monaco.KeyMod.CtrlCmd | $monaco.KeyMod.Shift | $monaco.KeyCode.KeyF],
         contextMenuGroupId: 'navigation',
         run: () => ((isFullScreen.value = !isFullScreen.value), void 0)
     });
@@ -114,12 +119,12 @@ function registerAction($monaco: typeof monaco, editor: monaco.editor.IStandalon
  * @param scopeName 作用域名称
  */
 async function getGrammarDefinition(scopeName: string) {
-    const source = extensions.sources.find((source) => source.scopeName === scopeName);
+    const source = extensions.value.sources.find((source: any) => source.scopeName === scopeName);
     if (!source) {
         throw new Error(`Unknown scope name: ${scopeName}`);
     }
-    const path = extensions.path + source.path;
-    const cacheKey = 'grammar_definitio_cache@' + path;
+    const path = extensions.value.path + source.path;
+    const cacheKey = 'grammar_definition_cache@' + path;
     let content = await storage.get<object>(cacheKey);
     content ??= await storage.set<object>(cacheKey, await loadFileJSON(path));
     return { format: 'json' as 'json', content };
@@ -129,9 +134,9 @@ async function getGrammarDefinition(scopeName: string) {
  * 加载 Onigasm WASM 文件
  */
 async function loadOnigasmWASM() {
-    const cacheKey = 'onigasm_wasm_cache@' + extensions.onigasmWASM;
+    const cacheKey = 'onigasm_wasm_cache@' + extensions.value.onigasmWASM;
     let data = await storage.get<ArrayBuffer>(cacheKey);
-    data ??= await storage.set<ArrayBuffer>(cacheKey, await loadFileArrayBuffer(extensions.onigasmWASM));
+    data ??= await storage.set<ArrayBuffer>(cacheKey, await loadFileArrayBuffer(extensions.value.onigasmWASM));
     await loadWASM(data);
 }
 
@@ -145,8 +150,8 @@ async function useJSTextMeta($monaco: typeof monaco, editor: monaco.editor.IStan
     // 加载 Onigasm WASM 文件
     await loadOnigasmWASM();
     // 添加textmeta主题
-    $monaco.editor.defineTheme('light-plus', lightPlusTheme as monaco.editor.IStandaloneThemeData);
-    $monaco.editor.defineTheme('dark-plus', darkPlusTheme as monaco.editor.IStandaloneThemeData);
+    $monaco.editor.defineTheme('light-plus', lightPlusTheme.value);
+    $monaco.editor.defineTheme('dark-plus', darkPlusTheme.value);
     // textmeta语法注册器
     const registry = new Registry({ getGrammarDefinition });
     // textmeta语法定义Map
@@ -163,6 +168,26 @@ async function useJSTextMeta($monaco: typeof monaco, editor: monaco.editor.IStan
  */
 function getStyleSize(value: number | string) {
     return typeof value === 'number' ? value + 'px' : value;
+}
+
+/**
+ * 加载配置文件
+ */
+async function loadMonacoConfigJSON() {
+    const loadList: [Ref<object | undefined>, string][] = [
+        [config, '/setting/monaco/config.json'],
+        [extensions, '/setting/monaco/extensions.json'],
+        [lightPlusTheme, '/setting/monaco/theme/light-plus.json'],
+        [darkPlusTheme, '/setting/monaco/theme/dark-plus.json']
+    ];
+    return Promise.all(
+        loadList.map(async ([configRef, url]) => {
+            const cacheKey = 'monaco_config_json_cache@' + url;
+            let value = await storage.get<object>(cacheKey);
+            value ??= await storage.set<object>(cacheKey, await loadFileJSON(url));
+            configRef.value = value;
+        })
+    );
 }
 
 defineExpose({

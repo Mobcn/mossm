@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import MonacoEditor from '@/components/editor/MonacoEditor.vue';
-import declareList from '@/assets/declare.json';
 import type { ModelItem } from '../MoAPI.vue';
 import type { EditorOptions, MonacoEditorInstance } from '@/components/editor/MonacoEditor.vue';
+
+/** 扩展类型定义文件路径 */
+const declareListPath = '/setting/monaco/javascript/declare.json';
 
 /** 参数 */
 const props = defineProps<{
@@ -54,6 +56,9 @@ onMounted(() => {
         };
 
         // 设置扩展类型定义
+        const cacheKey = 'declare_list_cache@' + declareListPath;
+        let declareList = await storage.get<string[]>(cacheKey);
+        declareList ??= await storage.set<string[]>(cacheKey, await loadFileJSON(declareListPath));
         const addList = declareList.map(async (path) => {
             let content = await storage.get('declare_cache@' + path);
             if (!content) {
@@ -112,7 +117,7 @@ async function getModelDeclareText(modelItem?: ModelItem, modelItems?: ModelItem
         names += ` | '${name}'`;
         results += ` T extends '${name}' ? ${name}Model :`;
     }
-    return (await loadFileText('/declare/template/model.d.ts'))
+    return (await loadFileText('/setting/monaco/javascript/declare/template/model.d.ts'))
         .replace(/\$\$namespace\$\$/g, modelItem.module.replace(/./, (i) => i.toUpperCase()) + 'Module')
         .replace(/\$\$types\$\$/g, types.join('\n    '))
         .replace(/\$\$names\$\$/g, names.replace('|', '=') + ';')

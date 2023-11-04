@@ -1,5 +1,5 @@
 [
-  "/declare/global.d.ts",
+  "/setting/monaco/javascript/declare/global.d.ts",
   "https://registry.npmmirror.com/bson/5.5.0/files/bson.d.ts",
   "https://registry.npmmirror.com/mongodb/5.9.0/files/mongodb.d.ts",
   "https://registry.npmmirror.com/mongoose/7.5.2/files/types/aggregate.d.ts",

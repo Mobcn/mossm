@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import iconConfig from '@/assets/icons/icon.config.json';
-
 // 参数
 const prop = withDefaults(
     defineProps<{
@@ -32,10 +30,14 @@ const iconLink = computed(() => {
 });
 
 // 初始化操作
-(() => {
+(async () => {
     // 获取Blob图标地址
     if (blobIconURL.value === '') {
-        const iconURL = (<any>iconConfig)[prop.iconPathName];
+        const iconConfigPath = '/setting/icons/icon.config.json';
+        const cacheKey = 'icon_config_cache@' + iconConfigPath;
+        let iconConfig = await storage.get<any>(cacheKey);
+        iconConfig ??= await storage.set<any>(cacheKey, await loadFileJSON(iconConfigPath));
+        const iconURL = iconConfig[prop.iconPathName];
         store.requestMap ??= {};
         store.requestMap[iconURL] ??= fetch(iconURL)
             .then((res) => res.blob())
