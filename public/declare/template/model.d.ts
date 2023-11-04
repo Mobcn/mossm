@@ -6,7 +6,8 @@ namespace $$namespace$$ {
 }
 
 declare const Model: $$namespace$$.$$currentModelName$$Model;
-declare const importModel: <T extends $$namespace$$.ModelName>(
-    model: T,
-    callback?: (Model: $$namespace$$.ResultModel<T>) => void
-) => Promise<$$namespace$$.ResultModel<T>>;
+declare const Models: {
+    [key in $$namespace$$.ModelName]: (
+        callback?: () => Promise<$$namespace$$.ResultModel<key>>
+    ) => Promise<$$namespace$$.ResultModel<key>>;
+};

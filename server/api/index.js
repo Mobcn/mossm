@@ -80,15 +80,14 @@ export default function handler(request, response) {
                         response.status(404).end();
                         return;
                     }
-                    const JWT = {
-                        sign: (data, expiresIn) => _JWT.sign(data, findModule.secretKey, expiresIn),
-                        verify: (token, ignoreExpiration) => _JWT.verify(token, findModule.secretKey, ignoreExpiration)
-                    };
-                    const textJS = '(Model, Result, JWT, importModel) => ' + findApi.handler;
-                    const currentImportModel = (mod, cb) => importModel(module, mod, cb);
-                    const preHander = eval(textJS)(Model, Result, JWT, currentImportModel);
+                    const Models = new Proxy({}, { get: (_, key) => (cb) => importModel(module, key, cb) });
+                    const moduleKey = findModule.secretKey;
+                    const sign = (data, expiresIn) => _JWT.sign(data, moduleKey, expiresIn);
+                    const verify = (token, ignoreExpiration) => _JWT.verify(token, moduleKey, ignoreExpiration);
+                    const JWT = { sign, verify };
+                    const preHander = eval(`(Model,Models,Result,JWT)=>${findApi.handler}`)(Model, Models, Result, JWT);
                     const { method: methods, authorized } = findApi;
-                    const secretKey = authorized ? findModule.secretKey : undefined;
+                    const secretKey = authorized ? moduleKey : undefined;
                     VHandler.config({ methods, secretKey }).build(preHander)(request, response);
                 })
                 .catch((error) => response.status(500).end(error.message))
