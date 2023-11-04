@@ -7,9 +7,6 @@ const databaseName = 'mossm';
 /** 数据库连接地址 */
 let uri;
 
-/** 连接计数 */
-let count = 0;
-
 /**
  * 获取数据库连接地址
  */
@@ -32,21 +29,18 @@ const MongoDB = {
     /**
      * 打开数据库连接
      *
-     * @param {((mongo: typeof mongoose) => void) | boolean} callbackOrIsAdd 连接回调或是否增加连接数
-     * @param {boolean} isAdd 是否增加连接数
+     * @param {(mongo: typeof mongoose) => void} [callback] 连接回调
      */
-    connect: (callbackOrIsAdd = false, isAdd = false) => {
-        const coi = typeof callbackOrIsAdd;
-        const $isAdd = coi === 'boolean' ? callbackOrIsAdd : isAdd;
-        $isAdd && ++count === 1 && mongoose.connect(uri || (uri = getURI()));
-        coi === 'function' && callbackOrIsAdd(mongoose);
+    connect: async (callback) => {
+        await mongoose.connect(uri || (uri = getURI()));
+        callback && callback(mongoose);
         return mongoose;
     },
 
     /**
      * 关闭数据库
      */
-    disconnect: () => --count === 0 && mongoose.connection.close()
+    disconnect: async () => mongoose.connection.close()
 };
 
 export default MongoDB;

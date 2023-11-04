@@ -60,14 +60,12 @@ export default function handler(request, response) {
         if (Object.keys(router).includes(pathname)) {
             router[pathname]()
                 .then(({ default: handler }) => handler(request, response))
-                .catch((error) => response.status(500).end(error.message))
-                .finally(() => DB.disconnect());
+                .catch((error) => response.status(500).end(error.message));
             return;
         }
         const paths = pathname.split('/');
         if (paths.length < 4) {
             response.status(404).end();
-            DB.disconnect();
             return;
         }
         const module = paths[1];
@@ -93,7 +91,6 @@ export default function handler(request, response) {
                 const secretKey = authorized ? moduleKey : undefined;
                 VHandler.config({ methods, secretKey }).build(preHander)(request, response);
             })
-            .catch((error) => response.status(500).end(error.message))
-            .finally(() => DB.disconnect());
-    }, true);
+            .catch((error) => response.status(500).end(error.message));
+    });
 }
