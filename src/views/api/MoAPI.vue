@@ -102,18 +102,20 @@ const gridProps: MoGridProps<GridRow> = {
             {
                 prop: 'path',
                 label: '接口地址',
+                minWidth: 300,
                 format: (row) =>
                     `/${row.module}/${row.model.replace(row.model[0], row.model[0].toLowerCase())}${row.path}`
             },
             {
                 prop: 'type',
                 label: '类型',
+                minWidth: 90,
                 format: (row) =>
                     row.customize ? '自定义' : typeOptions.find((item) => item.value === row.type)?.label || '-'
             },
-            { prop: 'authorized', label: '是否验证', format: (row) => (row.authorized ? '是' : '否') },
-            { prop: 'method', label: '请求方法' },
-            { prop: 'status', label: '状态', format: (row) => (row.status ? '开启' : '关闭') },
+            { prop: 'authorized', label: '是否验证', minWidth: 90, format: (row) => (row.authorized ? '是' : '否') },
+            { prop: 'method', label: '请求方法', minWidth: 90 },
+            { prop: 'status', label: '状态', minWidth: 60, format: (row) => (row.status ? '开启' : '关闭') },
             {
                 prop: 'create_time',
                 label: '创建时间',
