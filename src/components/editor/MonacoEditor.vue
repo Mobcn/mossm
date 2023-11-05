@@ -82,13 +82,18 @@ onMounted(async () => {
 async function initMonaco() {
     // 加载monaco对象
     const require = window.require!;
-    require.config({ paths: { vs: config.value.vs } });
+    require.config({
+        paths: { vs: config.value.vs },
+        'vs/nls': { availableLanguages: { 'vs/editor/editor.main': config.value.local } }
+    });
     await new Promise((resolve) => require(['vs/editor/editor.main'], resolve));
-    const $monaco = (currentMonaco.value = window.monaco);
+    const $monaco = window.monaco;
+    currentMonaco.value = markRaw($monaco);
     // 创建编辑器实例
     const domElement = editorContainer.value!;
     const $options = { ...options.value, value: codeText.value };
-    const instance = (editorInstance.value = $monaco.editor.create(domElement, $options));
+    const instance = $monaco.editor.create(domElement, $options);
+    editorInstance.value = markRaw(instance);
     // 使用textmeta语法分析器
     useJSTextMeta($monaco, instance);
     // 注册Action

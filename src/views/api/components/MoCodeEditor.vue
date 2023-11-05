@@ -3,8 +3,10 @@ import MonacoEditor from '@/components/editor/MonacoEditor.vue';
 import type { ModelItem } from '../MoAPI.vue';
 import type { EditorOptions, MonacoEditorInstance } from '@/components/editor/MonacoEditor.vue';
 
+/** JavaScript相关配置文件路径 */
+const configPath = '/setting/monaco/javascript/config.json';
 /** 扩展类型定义文件路径 */
-const declareListPath = '/setting/monaco/javascript/declare.json';
+const declareListPath = '/setting/monaco/javascript/declare/declare.json';
 
 /** 参数 */
 const props = defineProps<{
@@ -47,50 +49,103 @@ const options = computed<EditorOptions>(() => ({
     readOnly: props.disabled
 }));
 
-onMounted(() => {
-    monacoEditorRef.value!.useMonaco(async ({ languages }) => {
-        /** 添加扩展类型定义函数 */
-        const addExtraLib = (content: string, path: string) => {
-            // @ts-ignore
-            languages.typescript.javascriptDefaults.addExtraLib(content, path);
-        };
-
-        // 设置扩展类型定义
-        const cacheKey = 'declare_list_cache@' + declareListPath;
-        let declareList = await storage.get<string[]>(cacheKey);
-        declareList ??= await storage.set<string[]>(cacheKey, await loadFileJSON(declareListPath));
-        const addList = declareList.map(async (path) => {
-            let content = await storage.get('declare_cache@' + path);
-            if (!content) {
-                const text = await loadFileText(path);
-                if (text.indexOf('declare module') !== -1 || !path.startsWith('http')) {
-                    content = text;
-                } else {
-                    let moduleName = path;
-                    const index = moduleName.lastIndexOf('/');
-                    index !== -1 && (moduleName = path.substring(index + 1));
-                    moduleName.endsWith('.d.ts') && (moduleName = moduleName.substring(0, moduleName.length - 5));
-                    content = `declare module "${moduleName}" {\n${text.replace(/declare /g, '')}\n}`;
-                }
-                storage.set('declare_cache@' + path, content);
-            }
-            addExtraLib(content, path);
-        });
-
-        Promise.all(addList).then(() => {
-            // 根据模型更改更新类型扩展定义
-            let currentModelItem: ModelItem | null | undefined = null;
-            watchEffect(async () => {
-                const params = props.params;
-                if (currentModelItem !== params?.modelItem) {
-                    currentModelItem = params?.modelItem;
-                    const content = await getModelDeclareText(currentModelItem, params?.modelItems);
-                    addExtraLib(content, 'model.d.ts');
-                }
-            });
-        });
-    });
+// 挂载后执行
+onMounted(async () => {
+    const $editor = monacoEditorRef.value!;
+    const monacoPromise = new Promise<typeof monaco>($editor.useMonaco);
+    const editorPromise = new Promise<monaco.editor.IStandaloneCodeEditor>($editor.useEditor);
+    // 设置Prettier格式化
+    usePrettier(monacoPromise, editorPromise);
+    // 设置扩展类型定义
+    await setExtraLibs(monacoPromise);
+    // 根据模型更改更新类型扩展定义
+    watchModel(monacoPromise);
 });
+
+/**
+ * 监听模型更改
+ *
+ * @param monacoPromise monacoPromise对象
+ */
+async function watchModel(monacoPromise: Promise<typeof monaco>) {
+    const languages: any = (await monacoPromise).languages;
+    const addExtraLib = async (content: string, path: string) => {
+        languages.typescript.javascriptDefaults.addExtraLib(content, path);
+    };
+    // 根据模型更改更新类型扩展定义
+    let currentModelItem: ModelItem | null | undefined = null;
+    watchEffect(async () => {
+        const params = props.params;
+        if (currentModelItem !== params?.modelItem) {
+            currentModelItem = params?.modelItem;
+            const content = await getModelDeclareText(currentModelItem, params?.modelItems);
+            addExtraLib(content, 'model.d.ts');
+        }
+    });
+}
+
+/**
+ * 使用 Prettier 格式化，Alt + Shift + F
+ *
+ * @param monacoPromise monacoPromise对象
+ * @param editorPromise editorPromise对象
+ */
+async function usePrettier(
+    monacoPromise: Promise<typeof monaco>,
+    editorPromise: Promise<monaco.editor.IStandaloneCodeEditor>
+) {
+    const configKey = 'javascript_config_cache@' + configPath;
+    let config = await storage.get<any>(configKey);
+    config ??= await storage.set<string[]>(configKey, await loadFileJSON(configPath));
+    const { prettier } = config;
+    const { path, options } = prettier;
+    const [Prettier, { default: babel }, { default: estree }, $monaco, editor] = await Promise.all([
+        import(`${path}/standalone.mjs`),
+        import(`${path}/plugins/babel.mjs`),
+        import(`${path}/plugins/estree.mjs`),
+        monacoPromise,
+        editorPromise
+    ]);
+    editor.addCommand($monaco.KeyMod.Alt | $monaco.KeyMod.Shift | $monaco.KeyCode.KeyF, async () => {
+        const text = await Prettier.format(editor.getValue(), {
+            parser: 'babel',
+            plugins: [babel, estree],
+            ...options
+        });
+        editor.setValue(text);
+    });
+}
+
+/**
+ * 设置扩展类型定义
+ *
+ * @param monacoPromise monacoPromise对象
+ */
+async function setExtraLibs(monacoPromise: Promise<typeof monaco>) {
+    const listKey = 'declare_list_cache@' + declareListPath;
+    let declareList = await storage.get<string[]>(listKey);
+    declareList ??= await storage.set<string[]>(listKey, await loadFileJSON(declareListPath));
+    const addList = declareList.map(async (filePath) => {
+        let content = await storage.get('declare_cache@' + filePath);
+        if (!content) {
+            const text = await loadFileText(filePath);
+            if (text.indexOf('declare module') !== -1 || !filePath.startsWith('http')) {
+                content = text;
+            } else {
+                let moduleName = filePath;
+                const index = moduleName.lastIndexOf('/');
+                index !== -1 && (moduleName = filePath.substring(index + 1));
+                moduleName.endsWith('.d.ts') && (moduleName = moduleName.substring(0, moduleName.length - 5));
+                content = `declare module "${moduleName}" {\n${text.replace(/declare /g, '')}\n}`;
+            }
+            storage.set('declare_cache@' + filePath, content);
+        }
+        return { filePath, content };
+    });
+    const [$monaco, list] = await Promise.all([monacoPromise, Promise.all(addList)]);
+    // @ts-ignore
+    $monaco.languages.typescript.javascriptDefaults.setExtraLibs(list);
+}
 
 /**
  * 获取Model定义文本

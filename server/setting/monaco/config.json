@@ -1,3 +1,4 @@
 {
-    "vs": "https://cdn.staticfile.org/monaco-editor/0.44.0/min/vs"
+    "vs": "https://cdn.staticfile.org/monaco-editor/0.44.0/min/vs",
+    "local": "zh-cn"
 }

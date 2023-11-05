@@ -1,0 +1,11 @@
+{
+    "prettier": {
+        "path": "https://registry.npmmirror.com/prettier/3.0.3/files",
+        "options": {
+            "singleQuote": true,
+            "trailingComma": "none",
+            "tabWidth": 4,
+            "printWidth": 120
+        }
+    }
+}

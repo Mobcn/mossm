@@ -1,5 +1,15 @@
 import localforage from 'localforage';
 
+// 版本比较
+(async () => {
+    const version = document.getElementById('version')?.textContent?.trim() || '0.0.0';
+    const oldVersion = (await localforage.getItem<string>('version')) || '0.0.0';
+    if (version !== oldVersion) {
+        await localforage.clear();
+        await localforage.setItem('version', version);
+    }
+})();
+
 /**
  * 封装storage
  */
