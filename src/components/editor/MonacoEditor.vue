@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { loadWASM, Registry, wireTmGrammars } from '@/plugins/monaco-with-textmate';
-import { loadFileJSON, loadFileArrayBuffer } from '@/utils/load';
 
 /** 参数 */
 const props = withDefaults(
@@ -143,8 +142,7 @@ async function getGrammarDefinition(scopeName: string) {
     }
     const path = extensions.value.path + source.path;
     const cacheKey = 'grammar_definition_cache@' + path;
-    let content = await storage.get<object>(cacheKey);
-    content ??= await storage.set<object>(cacheKey, await loadFileJSON(path));
+    const content = await storage.getWithURL<Object>(cacheKey, path, 'json');
     return { format: 'json' as 'json', content };
 }
 
@@ -153,8 +151,7 @@ async function getGrammarDefinition(scopeName: string) {
  */
 async function loadOnigasmWASM() {
     const cacheKey = 'onigasm_wasm_cache@' + extensions.value.onigasmWASM;
-    let data = await storage.get<ArrayBuffer>(cacheKey);
-    data ??= await storage.set<ArrayBuffer>(cacheKey, await loadFileArrayBuffer(extensions.value.onigasmWASM));
+    const data = await storage.getWithURL<ArrayBuffer>(cacheKey, extensions.value.onigasmWASM, 'arrayBuffer');
     await loadWASM(data);
 }
 
@@ -201,9 +198,7 @@ async function loadMonacoConfigJSON() {
     return Promise.all(
         loadList.map(async ([configRef, url]) => {
             const cacheKey = 'monaco_config_json_cache@' + url;
-            let value = await storage.get<object>(cacheKey);
-            value ??= await storage.set<object>(cacheKey, await loadFileJSON(url));
-            configRef.value = value;
+            configRef.value = await storage.getWithURL<Object>(cacheKey, url, 'json');
         })
     );
 }

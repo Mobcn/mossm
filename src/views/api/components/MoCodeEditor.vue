@@ -56,6 +56,8 @@ onMounted(async () => {
     const editorPromise = new Promise<monaco.editor.IStandaloneCodeEditor>($editor.useEditor);
     // 设置Prettier格式化
     usePrettier(monacoPromise, editorPromise);
+    // 设置ESLint校验
+    useESLint(monacoPromise, editorPromise);
     // 设置扩展类型定义
     await setExtraLibs(monacoPromise);
     // 根据模型更改更新类型扩展定义
@@ -94,15 +96,14 @@ async function usePrettier(
     monacoPromise: Promise<typeof monaco>,
     editorPromise: Promise<monaco.editor.IStandaloneCodeEditor>
 ) {
-    const configKey = 'javascript_config_cache@' + configPath;
-    let config = await storage.get<any>(configKey);
-    config ??= await storage.set<string[]>(configKey, await loadFileJSON(configPath));
+    const cacheKey = 'javascript_config_cache@' + configPath;
+    const config = await storage.getWithURL<any>(cacheKey, configPath, 'json');
     const { prettier } = config;
     const { path, options } = prettier;
     const [Prettier, { default: babel }, { default: estree }, $monaco, editor] = await Promise.all([
-        import(`${path}/standalone.mjs`),
-        import(`${path}/plugins/babel.mjs`),
-        import(`${path}/plugins/estree.mjs`),
+        import(/* @vite-ignore */ `${path}/standalone.mjs`),
+        import(/* @vite-ignore */ `${path}/plugins/babel.mjs`),
+        import(/* @vite-ignore */ `${path}/plugins/estree.mjs`),
         monacoPromise,
         editorPromise
     ]);
@@ -117,14 +118,74 @@ async function usePrettier(
 }
 
 /**
+ * 使用 ESLint 校验
+ *
+ * @param monacoPromise monacoPromise对象
+ * @param editorPromise editorPromise对象
+ */
+async function useESLint(
+    monacoPromise: Promise<typeof monaco>,
+    editorPromise: Promise<monaco.editor.IStandaloneCodeEditor>
+) {
+    const eslintWorker = new Worker(await getESLintWorkerURL());
+    const [$monaco, editor] = await Promise.all([monacoPromise, editorPromise]);
+    const model = editor.getModel()!;
+    // 监听 ESLint Worker 的返回
+    eslintWorker.onmessage = function (e) {
+        const { markers, version } = e.data;
+        // 判断当前 model 的 versionId 与请求时是否一致
+        if (model && model.getVersionId() === version) {
+            $monaco.editor.setModelMarkers(model, 'ESLint', markers);
+        }
+    };
+    let timer: number | null = null;
+    // model 内容变更时通知 ESLint Worker
+    model.onDidChangeContent(() => {
+        timer && clearTimeout(timer);
+        const code = model.getValue();
+        const version = model.getVersionId();
+        timer = setTimeout(() => eslintWorker.postMessage({ code, version }), 500);
+    });
+}
+
+/**
+ * 获取 ESLint Worker JS
+ */
+async function getESLintWorkerURL() {
+    const cacheKey = 'javascript_config_cache@' + configPath;
+    const config = await storage.getWithURL<any>(cacheKey, configPath, 'json');
+    const { eslint } = config;
+    const { path, options } = eslint;
+    const workerText = `(async () => {
+        const res = await fetch('${path}');
+        eval('const window = undefined;' + (await res.text()));
+        const linter = new self.eslint.Linter();
+        self.addEventListener('message', function (e) {
+            const { code, version } = e.data;
+            const markers = linter.verify(code, ${JSON.stringify(options)}).map((err) => ({
+                code: err.ruleId,
+                startLineNumber: err.line,
+                endLineNumber: err.endLine,
+                startColumn: err.column,
+                endColumn: err.endColumn,
+                message: err.message,
+                severity: err.severity === 1 ? 4 : 8,
+                source: 'ESLint'
+            }));
+            self.postMessage({ markers, version });
+        });
+    })();`;
+    return URL.createObjectURL(new Blob([workerText], { type: 'text/javascript' }));
+}
+
+/**
  * 设置扩展类型定义
  *
  * @param monacoPromise monacoPromise对象
  */
 async function setExtraLibs(monacoPromise: Promise<typeof monaco>) {
-    const listKey = 'declare_list_cache@' + declareListPath;
-    let declareList = await storage.get<string[]>(listKey);
-    declareList ??= await storage.set<string[]>(listKey, await loadFileJSON(declareListPath));
+    const cacheKey = 'declare_list_cache@' + declareListPath;
+    const declareList = await storage.getWithURL<string[]>(cacheKey, declareListPath, 'json');
     const addList = declareList.map(async (filePath) => {
         let content = await storage.get('declare_cache@' + filePath);
         if (!content) {

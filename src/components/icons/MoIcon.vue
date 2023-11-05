@@ -35,8 +35,7 @@ const iconLink = computed(() => {
     if (blobIconURL.value === '') {
         const iconConfigPath = '/setting/icons/icon.config.json';
         const cacheKey = 'icon_config_cache@' + iconConfigPath;
-        let iconConfig = await storage.get<any>(cacheKey);
-        iconConfig ??= await storage.set<any>(cacheKey, await loadFileJSON(iconConfigPath));
+        const iconConfig = await storage.getWithURL<any>(cacheKey, iconConfigPath, 'json');
         const iconURL = iconConfig[prop.iconPathName];
         store.requestMap ??= {};
         store.requestMap[iconURL] ??= fetch(iconURL)
