@@ -41,9 +41,10 @@ async function importModel(module, model, callback) {
         DB.connect(async (mongoose) => {
             const findModel = await modelService.DAO.get({ module, name: model });
             const { name, property, table } = findModel;
+            const modelName = module.replace(/./, (i) => i.toUpperCase()) + '_' + name;
             const tableName = (module + '_' + table).toLowerCase();
             const schema = new mongoose.Schema(eval('(' + property + ')'));
-            const Model = mongoose.models[name] || mongoose.model(name, schema, tableName);
+            const Model = mongoose.models[modelName] || mongoose.model(modelName, schema, tableName);
             callback && callback(Model);
             resolve(Model);
         });
@@ -69,7 +70,7 @@ export default function handler(request, response) {
             return;
         }
         const module = paths[1];
-        const model = paths[2][0].toUpperCase() + paths[2].substring(1);
+        const model = paths[2].replace(/./, (i) => i.toUpperCase());
         const path = '/' + paths.slice(3).join('/');
         Promise.all([
             apiService.DAO.get({ module, model, path, status: true }),
