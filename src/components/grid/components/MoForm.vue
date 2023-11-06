@@ -82,7 +82,7 @@ const loadOptions = (() => {
             const isContinue = { value: true };
             optionsCache.set(options, reactiveOptions);
             watchEffect(async () => {
-                if (reactiveOptions.length <= 0 || isContinue.value) {
+                if (isContinue.value) {
                     const res = options(formData, isContinue);
                     const list = await Promise.resolve(res);
                     reactiveOptions.splice(0);
@@ -199,6 +199,11 @@ export type CustomParamsLoad<T extends Record<string, any>> = (
 ) => Record<string, any> | any[] | Promise<Record<string, any> | any[] | undefined> | undefined;
 
 /**
+ * 自定义监听
+ */
+export type CustomWatch<T extends Record<string, any>> = (editDataRef: Ref<EditData<T>>) => void;
+
+/**
  * 表单组件项
  */
 export type MoFormComponent<T extends Record<string, any>> = {
@@ -290,7 +295,7 @@ export type MoFormProps<T extends Record<string, any>> = {
     /** 标签宽度 */
     labelWidth?: number | string;
     /** 数据监听方法数组 */
-    watch?: ((editDataRef: Ref<EditData<T>>) => void)[];
+    watch?: CustomWatch<T>[];
     /** 初始化数据 */
     initData?: { [P in keyof T]?: T[P] } | (() => { [P in keyof T]?: T[P] });
 };

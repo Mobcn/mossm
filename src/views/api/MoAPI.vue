@@ -5,7 +5,7 @@ import type { MoGridProps } from '@/components/grid/MoGrid.vue';
 import type { API, SaveAPI, UpdateAPI } from '@/api/api-service';
 import type { Model } from '@/api/model-service';
 import type { ParamItem } from '@/utils/handler-template';
-import type { SelectOptionsLoad } from '@/components/grid/components/MoForm.vue';
+import type { CustomWatch, SelectOptionsLoad } from '@/components/grid/components/MoForm.vue';
 
 /** 表格行数据类型 */
 type GridRow = Omit<API, '_id'> & { _id?: string };
@@ -28,14 +28,21 @@ const typeOptions = [
 const loadModule: SelectOptionsLoad<GridRow> = (() => {
     let cache: { label: string; value: string }[] | undefined;
     return async (_editDataRef, isContinue) => {
-        isContinue.value = false;
         if (cache) {
             return cache;
         }
         const list = await moduleService.all();
+        isContinue.value = false;
         return (cache = list.map((item) => ({ label: item, value: item })));
     };
 })();
+
+/**
+ * 监听模块值变化
+ */
+const watchModule: CustomWatch<GridRow> = (editDataRef) => {
+    !editDataRef.value.module && (editDataRef.value.model = '');
+};
 
 /**
  * 加载模型
@@ -45,7 +52,6 @@ const loadModel: SelectOptionsLoad<GridRow> = (() => {
     return async (editDataRef) => {
         const module = editDataRef.value.module;
         if (!module) {
-            editDataRef.value.model = '';
             return [];
         }
         if (cache.has(module)) {
@@ -85,13 +91,7 @@ const gridProps: MoGridProps<GridRow> = {
                 options: loadModel
             }
         ],
-        watch: [
-            (editDataRef) => {
-                if (!editDataRef.value.module) {
-                    editDataRef.value.model = '';
-                }
-            }
-        ]
+        watch: [watchModule]
     },
     toolbar: {
         buttons: ['add', 'deleteBatch']
@@ -282,6 +282,7 @@ const gridProps: MoGridProps<GridRow> = {
             handler: [{ required: true, message: '请输入处理器', trigger: 'blur' }]
         },
         watch: [
+            watchModule,
             (editDataRef) => {
                 if (
                     editDataRef.value?.customize?.toString() === 'false' &&

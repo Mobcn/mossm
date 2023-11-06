@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 import MoForm from './MoForm.vue';
-import type { EditData, MoFormInstance, MoFormComponent } from './MoForm.vue';
+import type { CustomWatch, EditData, MoFormInstance, MoFormComponent } from './MoForm.vue';
 
 /** 参数 */
 const props = defineProps<MoSearchProps<T>>();
@@ -28,7 +28,7 @@ export type MoSearchProps<T extends Record<string, any>> = {
     /** 组件大小 */
     size?: 'default' | 'small' | 'large';
     /** 数据监听方法数组 */
-    watch?: ((editDataRef: Ref<EditData<T>>) => void)[];
+    watch?: CustomWatch<T>[];
 };
 </script>
 
