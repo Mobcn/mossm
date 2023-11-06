@@ -83,7 +83,7 @@ const deleteEvent = (row: T) => {
                 return;
             }
             ElMessage({ message: '删除成功！', type: 'success' });
-            await loadData();
+            await loadData(true);
         })
         .catch(() => 'cancel')
         .finally(() => (loading.value = false));
@@ -112,7 +112,7 @@ const deleteBatchEvent = async () => {
                         return;
                     }
                     ElMessage({ message: '批量删除成功！', type: 'success' });
-                    await loadData();
+                    await loadData(true);
                 }
             })
             .catch(() => 'cancel')
@@ -126,13 +126,13 @@ const editEvent = (row: T) => openEditDialog({ ...row });
 /** 页码修改事件 */
 const pageChangeEvent = (value: number) => {
     page.value = value;
-    loadData();
+    loadData(true);
 };
 
 /** 每页最大数据条数修改事件 */
 const limitChangeEvent = (value: number) => {
     limit.value = value;
-    loadData();
+    loadData(true);
 };
 
 /** 编辑弹窗确认事件 */
@@ -142,7 +142,7 @@ const confirmEvent = async (type: 'add' | 'update', editData: EditData<T>) => {
         await api.value[type]!(editData);
         ElMessage({ message: `${type === 'add' ? '添加' : '更新'}成功！`, type: 'success' });
         type === 'add' && (page.value = 1);
-        await loadData();
+        await loadData(true);
         editDialogVisible.value = false;
     } catch (error) {
         window.process.env.VUE_APP_ENV !== 'production' && console.error(error);
