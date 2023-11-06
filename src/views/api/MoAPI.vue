@@ -42,8 +42,7 @@ const loadModule: SelectOptionsLoad<GridRow> = (() => {
  */
 const loadModel: SelectOptionsLoad<GridRow> = (() => {
     const cache = new Map<string, { label: string; value: string }[]>();
-    return async (editDataRef, isContinue) => {
-        isContinue.value = false;
+    return async (editDataRef) => {
         const module = editDataRef.value.module;
         if (!module) {
             editDataRef.value.model = '';
