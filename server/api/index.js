@@ -81,7 +81,15 @@ export default function handler(request, response) {
                     response.status(404).end();
                     return;
                 }
-                const Models = new Proxy({}, { get: (_, key) => (cb) => importModel(module, key, cb) });
+                const Models = new Proxy(
+                    {},
+                    {
+                        get: (_, key) => {
+                            console.log('Models.module: ', module);
+                            return (cb) => importModel(module, key, cb);
+                        }
+                    }
+                );
                 const moduleKey = findModule.secretKey;
                 const sign = (data, expiresIn) => _JWT.sign(data, moduleKey, expiresIn);
                 const verify = (token, ignoreExpiration) => _JWT.verify(token, moduleKey, ignoreExpiration);
