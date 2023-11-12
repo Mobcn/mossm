@@ -41,8 +41,11 @@ const loadModule: SelectOptionsLoad<GridRow> = (() => {
  * 监听模块值变化
  */
 const watchModule: CustomWatch<GridRow> = (editDataRef) => {
-    editDataRef.value.module;
-    editDataRef.value.model = '';
+    const module = editDataRef.value.module;
+    const { tagName, classList } = document.activeElement || {};
+    if (!module || (tagName === 'DIV' && classList?.contains('el-select__popper'))) {
+        editDataRef.value.model = '';
+    }
 };
 
 /**
