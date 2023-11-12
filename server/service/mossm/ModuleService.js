@@ -14,7 +14,7 @@ class ModuleService extends BaseService {
      * 获取模块名列表
      */
     async listName() {
-        const list = await this.DAO.listAll();
+        const list = await this.DAO.list({ sort: { name: 1 } });
         return list.map((item) => item.name);
     }
 

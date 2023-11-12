@@ -33,7 +33,7 @@ class ModelService extends BaseService {
      * @param {string} [module] 模块
      */
     async listAll(module) {
-        return await this.DAO.list({ filter: module ? { module } : {} });
+        return await this.DAO.list({ filter: module ? { module } : {}, sort: { name: 1 } });
     }
 
     /**
