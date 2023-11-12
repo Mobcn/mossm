@@ -28,7 +28,7 @@ class APIDAO extends BaseDAO {
         const [list, total] = await Promise.all([
             this.Model.aggregate()
                 .match(filter)
-                .sort({ module: 1, model: 1, path: 1 })
+                .sort({ module: 1, model: 1, create_time: -1 })
                 .group({
                     _id: { module: '$module', model: '$model' },
                     max_time: { $max: '$create_time' },
