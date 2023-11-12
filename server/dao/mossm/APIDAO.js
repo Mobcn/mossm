@@ -39,6 +39,9 @@ class APIDAO extends BaseDAO {
                 },
                 {
                     $unwind: '$records'
+                },
+                {
+                    $project: '$records'
                 }
             ])
                 .skip((page - 1) * limit)
