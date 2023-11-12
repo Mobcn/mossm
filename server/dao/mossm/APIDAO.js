@@ -20,14 +20,14 @@ class APIDAO extends BaseDAO {
             this.Model.aggregate([
                 {
                     $sort: {
-                        create_time: -1
+                        module: 1,
+                        model: 1,
+                        path: 1
                     }
                 },
                 {
                     $sort: {
-                        module: 1,
-                        model: 1,
-                        path: 1
+                        create_time: -1
                     }
                 }
             ])
