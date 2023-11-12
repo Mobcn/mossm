@@ -21,7 +21,7 @@ class APIDAO extends BaseDAO {
                 .match(filter)
                 .sort({ create_time: -1 })
                 .group({
-                    _id: { module: '$module', model: '$model', path: '$path' },
+                    _id: { module: '$module', model: '$model' },
                     records: { $push: '$$ROOT' }
                 })
                 .unwind('records')
