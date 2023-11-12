@@ -27,9 +27,9 @@ class APIDAO extends BaseDAO {
                 },
                 {
                     $group: {
-                        _id: { module: '$module' },
+                        _id: { module: '$module', model: '$model' },
                         max_time: { $max: '$create_time' },
-                        records: { $push: '$$ROOT' }
+                        record: { $push: '$$ROOT' }
                     }
                 },
                 {
@@ -38,10 +38,7 @@ class APIDAO extends BaseDAO {
                     }
                 },
                 {
-                    $unwind: '$records'
-                },
-                {
-                    $project: '$records'
+                    $unwind: '$record'
                 }
             ])
                 .skip((page - 1) * limit)
@@ -49,7 +46,7 @@ class APIDAO extends BaseDAO {
                 .exec(),
             this.Model.count(filter)
         ]);
-        return { list, total };
+        return { list: list.map((item) => item.record), total };
     }
 }
 
