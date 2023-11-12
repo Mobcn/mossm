@@ -27,12 +27,12 @@ class APIDAO extends BaseDAO {
                 },
                 {
                     $group: {
-                        max_time: { $max: '$create_time' }
+                        _id: { $max: '$create_time' }
                     }
                 },
                 {
                     $sort: {
-                        max_time: -1
+                        _id: -1
                     }
                 }
             ])
