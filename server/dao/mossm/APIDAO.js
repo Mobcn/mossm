@@ -41,14 +41,10 @@ class APIDAO extends BaseDAO {
                     }
                 },
                 {
-                    $redact: {
-                        $cond: {
-                            if: {
-                                $and: [{ $gt: ['$max_time', '$create_time'] }]
-                            }
-                        },
-                        then: '$$DESCEND',
-                        else: '$$PRUNE'
+                    $project: {
+                        _id: 0,
+                        max_time: 0,
+                        records: 1
                     }
                 }
             ])
