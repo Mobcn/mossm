@@ -19,37 +19,21 @@ class APIDAO extends BaseDAO {
         const [list, total] = await Promise.all([
             this.Model.aggregate()
                 .match(filter)
-                .sort({ create_time: -1 })
+                .sort({ module: 1, model: 1, path: 1 })
                 .group({
                     _id: { module: '$module', model: '$model' },
-                    records: { $push: '$$ROOT' }
+                    max_time: { $max: '$create_time' },
+                    record: { $push: '$$ROOT' }
                 })
-                .unwind('records')
-                .project({
-                    _id: 0,
-                    records: 0,
-                    id: '$records._id',
-                    module: '$records.module',
-                    model: '$records.model',
-                    path: '$records.path',
-                    method: '$records.method',
-                    authorized: '$records.authorized',
-                    customize: '$records.customize',
-                    type: '$records.type',
-                    success_message: '$records.success_message',
-                    error_message: '$records.error_message',
-                    handler: '$records.handler',
-                    status: '$records.status',
-                    create_time: '$records.create_time',
-                    update_time: '$records.update_time'
-                })
+                .sort({ max_time: -1 })
+                .unwind('record')
                 .skip((page - 1) * limit)
                 .limit(limit)
                 .exec(),
             this.Model.count(filter)
         ]);
 
-        return { list, total };
+        return { list: list.map((item) => item.record), total };
     }
 }
 
