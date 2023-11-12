@@ -22,16 +22,16 @@ class APIDAO extends BaseDAO {
                 .sort({ create_time: -1 })
                 .group({
                     _id: { module: '$module', model: '$model' },
-                    record: { $push: '$$ROOT' }
+                    records: { $push: '$$ROOT' }
                 })
-                .unwind('record')
+                .unwind('records')
                 .skip((page - 1) * limit)
                 .limit(limit)
                 .exec(),
             this.Model.count(filter)
         ]);
 
-        return { list: list.map((item) => item.record), total };
+        return { list: list.map((item) => item.records), total };
     }
 }
 
