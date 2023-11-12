@@ -26,7 +26,8 @@ class APIDAO extends BaseDAO {
                 })
                 .unwind('records')
                 .project({
-                    records: 1,
+                    records: 0,
+                    _id: '$records.id',
                     module: '$records.module',
                     model: '$records.model',
                     path: '$records.path',
