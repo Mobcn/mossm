@@ -24,13 +24,10 @@ class APIDAO extends BaseDAO {
                     }
                 },
                 {
-                    $group: {
-                        _path: { module: '$module', model: '$model', path: '$path' }
-                    }
-                },
-                {
                     $sort: {
-                        _path: 1
+                        module: 1,
+                        model: 1,
+                        path: 1
                     }
                 }
             ])
