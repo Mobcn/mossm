@@ -27,10 +27,7 @@ class APIDAO extends BaseDAO {
                 },
                 {
                     $group: {
-                        _id: {
-                            module: '$module',
-                            model: '$model'
-                        },
+                        _id: { module: '$module' },
                         max_time: { $max: '$create_time' },
                         records: { $push: '$$ROOT' }
                     }
@@ -43,7 +40,7 @@ class APIDAO extends BaseDAO {
                 {
                     $project: {
                         _id: 0,
-                        max_time: 0,
+                        module: '$_id',
                         records: 1
                     }
                 }
