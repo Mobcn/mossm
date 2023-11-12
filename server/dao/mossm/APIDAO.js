@@ -19,7 +19,6 @@ class APIDAO extends BaseDAO {
         const [list, total] = await Promise.all([
             this.Model.aggregate([
                 {
-                    $match: filter,
                     $sort: {
                         create_time: -1
                     }
