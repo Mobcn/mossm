@@ -27,13 +27,13 @@ class APIDAO extends BaseDAO {
                 },
                 {
                     $group: {
-                        _id: { $max: '$create_time' },
-                        path: { $first: '$path' }
+                        _id: { module: '$module' },
+                        max_time: { $max: '$create_time' }
                     }
                 },
                 {
                     $sort: {
-                        _id: -1
+                        max_time: -1
                     }
                 }
             ])
