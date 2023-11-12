@@ -38,12 +38,6 @@ class APIDAO extends BaseDAO {
                     }
                 },
                 {
-                    $group: {
-                        _id: null,
-                        records: { $push: '$records' }
-                    }
-                },
-                {
                     $unwind: '$records'
                 }
             ])
