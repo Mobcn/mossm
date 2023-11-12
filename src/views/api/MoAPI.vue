@@ -41,7 +41,8 @@ const loadModule: SelectOptionsLoad<GridRow> = (() => {
  * 监听模块值变化
  */
 const watchModule: CustomWatch<GridRow> = (editDataRef) => {
-    !editDataRef.value.module && (editDataRef.value.model = '');
+    editDataRef.value.module;
+    editDataRef.value.model = '';
 };
 
 /**
