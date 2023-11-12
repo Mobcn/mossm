@@ -17,35 +17,22 @@ class APIDAO extends BaseDAO {
      */
     async page({ filter = {}, page = 1, limit = 10 }) {
         const [list, total] = await Promise.all([
-            this.Model.aggregate([
-                {
-                    $sort: {
-                        module: 1,
-                        model: 1,
-                        path: 1
-                    }
-                },
-                {
-                    $group: {
-                        _id: { module: '$module', model: '$model' },
-                        max_time: { $max: '$create_time' },
-                        record: { $push: '$$ROOT' }
-                    }
-                },
-                {
-                    $sort: {
-                        max_time: -1
-                    }
-                },
-                {
-                    $unwind: '$record'
-                }
-            ])
+            this.Model.aggregate()
+                .match(filter)
+                .sort({ module: 1, model: 1, path: 1 })
+                .group({
+                    _id: { module: '$module', model: '$model' },
+                    max_time: { $max: '$create_time' },
+                    record: { $push: '$$ROOT' }
+                })
+                .sort({ max_time: -1 })
+                .unwind('record')
                 .skip((page - 1) * limit)
                 .limit(limit)
                 .exec(),
             this.Model.count(filter)
         ]);
+
         return { list: list.map((item) => item.record), total };
     }
 }
