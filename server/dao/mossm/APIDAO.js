@@ -27,7 +27,8 @@ class APIDAO extends BaseDAO {
                 },
                 {
                     $group: {
-                        _id: { $max: '$create_time' }
+                        _id: { $max: '$create_time' },
+                        path: { $first: '$path' }
                     }
                 },
                 {
