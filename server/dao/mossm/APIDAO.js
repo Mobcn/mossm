@@ -38,11 +38,13 @@ class APIDAO extends BaseDAO {
                     }
                 },
                 {
-                    $project: {
-                        _id: 0,
-                        module: '$_id',
-                        records: 1
+                    $group: {
+                        _id: null,
+                        records: { $push: '$records' }
                     }
+                },
+                {
+                    $unwind: '$records'
                 }
             ])
                 .skip((page - 1) * limit)
