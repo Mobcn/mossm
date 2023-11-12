@@ -34,7 +34,7 @@ class APIService extends BaseService {
             filter.module = module;
             model && (filter.model = model);
         }
-        return await this.DAO.page({ filter, page, limit, sort: { create_time: -1, module: 1, model: 1, path: 1 } });
+        return await this.DAO.page({ filter, page, limit, sort: { module: 1, model: 1, path: 1, create_time: -1 } });
     }
 
     /**
