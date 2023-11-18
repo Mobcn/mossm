@@ -43,7 +43,7 @@ export default VHandler.buildPOSTAndAuth(
             throw new Error('该接口已存在');
         }
         const { code: handler } = transform(raw_handler, {
-            presets: [['env', { targets: 'node 18', minified: true }]],
+            presets: [['env', { targets: 'node 18' }]],
             comments: false,
             minified: true
         });
