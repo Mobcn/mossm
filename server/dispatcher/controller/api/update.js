@@ -43,6 +43,7 @@ export default VHandler.buildPOSTAndAuth(
     }) => {
         const { code: handler } = transform(raw_handler, {
             presets: [['env', { targets: 'node 18' }]],
+            comments: false,
             minified: true
         });
         const data = await APIModel.findByIdAndUpdate(_id, {
