@@ -10,7 +10,7 @@ import { Model as ModuleModel } from './model/ModuleModel.js';
 /** @typedef {import("./utils/handler").VResponse} VResponse */
 /** @typedef {(request: VRequest, response: VResponse) => void} VercelHandler */
 
-const require = createRequire(baseURL || import.meta.url);
+const require = createRequire(import.meta.url);
 
 /**
  * @type {{ [path: string]: () => Promise<{ default: VercelHandler }> }}
