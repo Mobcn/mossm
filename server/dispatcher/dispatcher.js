@@ -9,7 +9,15 @@ import { Model as ModuleModel } from './model/ModuleModel.js';
 /** @typedef {import("./utils/handler").VResponse} VResponse */
 /** @typedef {(request: VRequest, response: VResponse) => void} VercelHandler */
 
-const require = createRequire(import.meta.url);
+const require = (() => {
+    const _require = createRequire(import.meta.url);
+    return (id) => {
+        if (id === 'mongoose') {
+            return _require('./plugins/bundled-mongoose.js');
+        }
+        return _require(id);
+    };
+})();
 
 /**
  * @type {{ [path: string]: () => Promise<{ default: VercelHandler }> }}
