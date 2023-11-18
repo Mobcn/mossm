@@ -12,7 +12,8 @@
         "path": "https://registry.npmmirror.com/eslint-linter-browserify/8.53.0/files/linter.min.js",
         "options": {
             "parserOptions": {
-                "ecmaVersion": 11
+                "ecmaVersion": 11,
+                "sourceType": "module"
             },
             "env": {
                 "es6": true
