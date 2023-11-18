@@ -35,7 +35,7 @@ export default VHandler.buildPOSTAndAuth(
             throw new Error('该模型已存在');
         }
         if (module === 'mossm' || module === 'dispatcher' || staticDirs.includes(module)) {
-            const message = `非法的模块名[${module}], 模块名不能为${['mossm', ...staticDirs].join(', ')}`;
+            const message = `非法的模块名[${module}], 模块名不能为${['mossm', 'dispatcher', ...staticDirs].join(', ')}`;
             throw new Error(message);
         }
         const findModule = await ModuleModel.findOne({ module }).exec();
