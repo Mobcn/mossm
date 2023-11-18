@@ -1,13 +1,7 @@
 {
     "type": "module",
-    "imports": {
-        "jsonwebtoken": "./plugins/bundled-jsonwebtoken.js",
-        "mongoose": "./plugins/bundled-mongoose.js",
-        "terser": "./plugins/bundled-terser.js"
-    },
     "devDependencies": {
         "jsonwebtoken": "^9.0.2",
-        "mongoose": "^7.6.3",
-        "terser": "^5.22.0"
+        "mongoose": "^7.6.3"
     }
 }
