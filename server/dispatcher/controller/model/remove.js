@@ -1,4 +1,4 @@
-import mongoose from '../plugins/bundled-mongoose.js';
+import mongoose from '../../plugins/bundled-mongoose.js';
 import VHandler, { Result } from '../../utils/handler.js';
 import { Model as ModelModel } from '../../model/ModelModel.js';
 import { Model as ModuleModel } from '../../model/ModuleModel.js';
