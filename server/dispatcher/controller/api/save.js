@@ -30,7 +30,6 @@ export default VHandler.buildPOSTAndAuth(
         authorized,
         customize,
         raw_handler,
-        handler,
         type,
         method,
         input_fields,
