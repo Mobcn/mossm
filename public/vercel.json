@@ -26,42 +26,12 @@
     ],
     "redirects": [
         {
-            "source": "/config/(.*)",
-            "destination": "/",
-            "permanent": true
-        },
-        {
-            "source": "/controller/(.*)",
-            "destination": "/",
-            "permanent": true
-        },
-        {
-            "source": "/dao/(.*)",
-            "destination": "/",
-            "permanent": true
-        },
-        {
-            "source": "/handler/(.*)",
+            "source": "/dispatcher/(.*)",
             "destination": "/",
             "permanent": true
         },
         {
             "source": "/netlify/(.*)",
-            "destination": "/",
-            "permanent": true
-        },
-        {
-            "source": "/plugins/(.*)",
-            "destination": "/",
-            "permanent": true
-        },
-        {
-            "source": "/service/(.*)",
-            "destination": "/",
-            "permanent": true
-        },
-        {
-            "source": "/utils/(.*)",
             "destination": "/",
             "permanent": true
         }

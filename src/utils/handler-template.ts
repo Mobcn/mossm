@@ -26,8 +26,11 @@ export function commonHandlerTemplate(
     }
     comment += ' */';
     paramObjectString += paramObjectString.length > 1 ? ' }' : '}';
-    return `${comment}
-async function handler(${paramObjectString}) {
+    return `import { Result, JWT } from "utils";
+import { Model, Models } from "#current-module";
+
+${comment}
+export async function handler(${paramObjectString}) {
     try {
         ${mainString}
         return Result.success({ message: '${successMessage}', data });

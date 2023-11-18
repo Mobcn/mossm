@@ -1,4 +1,4 @@
-import require from './utils/require.js';
+import { customRequire } from './utils/require.js';
 import DB from './database/mongodb.js';
 import VHandler, { Result, JWT as _JWT } from './utils/handler.js';
 import { Model as APIModel } from './model/APIModel.js';
@@ -84,9 +84,9 @@ async function runDynamical(module, model, path, request, response) {
     const sign = (data, expiresIn) => _JWT.sign(data, moduleKey, expiresIn);
     const verify = (token, ignoreExpiration) => _JWT.verify(token, moduleKey, ignoreExpiration);
     const JWT = { sign, verify };
+    const require = customRequire({ '#current-module': { Model, Models } });
     const exports = {};
-    const fun = new Function('require', 'exports', 'Model', 'Models', 'Result', 'JWT', findApi.handler);
-    await fun(require, exports, Model, Models, Result, JWT);
+    await new Function('require', 'exports', findApi.handler)(require, exports);
     const { method: methods, authorized } = findApi;
     const secretKey = authorized ? moduleKey : undefined;
     const handler = VHandler.config({ methods, secretKey }).build(exports.handler);

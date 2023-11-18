@@ -90,7 +90,7 @@ function createCookies(context) {
  * @param {Request} request 请求对象
  * @param {Context} context 请求上下文
  */
-async function createVercelRequest(request, context) {
+async function createVRequest(request, context) {
     const { search, pathname, searchParams } = new URL(request.url);
     return new Proxy(
         {
@@ -122,7 +122,7 @@ async function createVercelRequest(request, context) {
  *
  * @param {(value: any) => void} resolve 返回方法
  */
-function createVercelResponse(resolve) {
+function createVResponse(resolve) {
     let _status = 200;
     let _headers = new Headers();
     return {
@@ -192,4 +192,4 @@ function createVercelResponse(resolve) {
     };
 }
 
-export { createVercelRequest, createVercelResponse };
+export { createVRequest, createVResponse };

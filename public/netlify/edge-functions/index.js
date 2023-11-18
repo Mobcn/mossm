@@ -1,6 +1,5 @@
-import entry from '../../api/index.js';
-import staticDirs from '../../config/static.js';
-import { createVercelRequest, createVercelResponse } from '../utils/convert.js';
+import dispatcher from '../../dispatcher/dispatcher.js';
+import { createVRequest, createVResponse } from '../utils/convert.js';
 
 /**
  * 请求处理器
@@ -11,9 +10,9 @@ import { createVercelRequest, createVercelResponse } from '../utils/convert.js';
  */
 export default async (request, context) => {
     return new Promise(async (resolve) => {
-        const vercelRequest = await createVercelRequest(request, context);
-        const vercelResponse = createVercelResponse(resolve);
-        entry(vercelRequest, vercelResponse);
+        const vRequest = await createVRequest(request, context);
+        const vResponse = createVResponse(resolve);
+        dispatcher(vRequest, vResponse);
     });
 };
 
@@ -24,7 +23,7 @@ export default async (request, context) => {
  */
 export const config = {
     path: '/(.+)/*',
-    excludedPath: staticDirs.map((name) => `/${name}/*`)
+    excludedPath: ['assets', 'img', 'setting'].map((name) => `/${name}/*`)
 };
 
 /** @typedef {"off" | "manual"} Cache 缓存 */
