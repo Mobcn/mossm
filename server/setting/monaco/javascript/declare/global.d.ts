@@ -10,11 +10,6 @@ declare module 'utils' {
         jti?: string | undefined;
     }
 
-    export const JWT: {
-        sign: (data: any, expiresIn: number | string) => string;
-        verify: (token: string, ignoreExpiration: boolean) => string | JwtPayload;
-    };
-
     export class Result {
         static success(params: { code?: number; message?: string; data?: any }): Result;
         static error(params: { code?: number; message?: string }): Result;

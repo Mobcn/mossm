@@ -1,13 +1,12 @@
 import { createRequire } from 'node:module';
 import * as mongoose from '../plugins/bundled-mongoose.js';
 import Result from './result.js';
-import JWT from './jwt.js';
 
 const _require = createRequire(import.meta.url);
 
 const map = {
     mongoose: { ...mongoose, __esModule: true },
-    utils: { Result, JWT, __esModule: true }
+    utils: { Result, __esModule: true }
 };
 
 /**

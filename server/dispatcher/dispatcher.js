@@ -84,7 +84,7 @@ async function runDynamical(module, model, path, request, response) {
     const sign = (data, expiresIn) => _JWT.sign(data, moduleKey, expiresIn);
     const verify = (token, ignoreExpiration) => _JWT.verify(token, moduleKey, ignoreExpiration);
     const JWT = { sign, verify };
-    const require = customRequire({ '#current-module': { Model, Models } });
+    const require = customRequire({ '#current-module': { Model, Models, JWT } });
     const exports = {};
     await new Function('require', 'exports', findApi.handler)(require, exports);
     const { method: methods, authorized } = findApi;
