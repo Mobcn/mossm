@@ -27,8 +27,8 @@ ${xe.replace(/declare /g,"")}
  *
  * @param {Object} param0 请求参数
 `,le="{";return re.length>0&&(le+=" ",re.forEach((se,ce)=>{const de=se.type==="Date"||se.type==="Object"?se.type:se.type.toLowerCase(),pe=se.default?`[param0.${se.name}=${se.default}]`:`param0.${se.name}`;ae+=` * @param {${de}} ${pe} ${se.description||""}
-`,ce>0&&(le+=", "),le+=se.default?`${se.name} = ${se.default}`:se.name})),ae+=" */",le+=le.length>1?" }":"}",`import { Result, JWT } from "utils";
-import { Model, Models } from "#current-module";
+`,ce>0&&(le+=", "),le+=se.default?`${se.name} = ${se.default}`:se.name})),ae+=" */",le+=le.length>1?" }":"}",`import { Model, Models, JWT } from '#current-module';
+import { Result } from 'utils';
 
 ${ae}
 export async function handler(${le}) {

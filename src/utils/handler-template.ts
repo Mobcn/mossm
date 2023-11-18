@@ -26,8 +26,8 @@ export function commonHandlerTemplate(
     }
     comment += ' */';
     paramObjectString += paramObjectString.length > 1 ? ' }' : '}';
-    return `import { Result, JWT } from "utils";
-import { Model, Models } from "#current-module";
+    return `import { Model, Models, JWT } from '#current-module';
+import { Result } from 'utils';
 
 ${comment}
 export async function handler(${paramObjectString}) {
