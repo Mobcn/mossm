@@ -51,7 +51,7 @@ export default VHandler.buildPOST(
                 ]);
             }
             const pass = (await SettingModel.findOne({ key: 'password' }).exec()) || null;
-            if (username !== name || password !== pass) {
+            if (username !== name.value || password !== pass.value) {
                 throw new Error('用户名或密码错误!');
             }
             resultToken = JWT.sign({}, JWT_SECRET_KEY);
