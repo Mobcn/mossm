@@ -43,17 +43,17 @@ export default defineConfig(({ mode }) => {
                     {
                         name: 'localforage',
                         var: 'localforage',
-                        path: `https://cdn.staticfile.org/localforage/1.10.0/localforage.min.js`
+                        path: `https://cdn.staticfile.net/localforage/1.10.0/localforage.min.js`
                     },
 
                     // Vue
                     {
                         name: 'vue',
                         var: 'Vue',
-                        path: `https://cdn.staticfile.org/vue/3.3.4/vue.global.prod.min.js`,
+                        path: `https://cdn.staticfile.net/vue/3.3.4/vue.global.prod.min.js`,
                         css: [
                             // Normalize 样式重置
-                            'https://cdn.staticfile.org/normalize/8.0.1/normalize.min.css'
+                            'https://cdn.staticfile.net/normalize/8.0.1/normalize.min.css'
                         ]
                     },
                     {
@@ -66,36 +66,36 @@ export default defineConfig(({ mode }) => {
                     {
                         name: 'element-plus',
                         var: 'ElementPlus',
-                        path: 'https://cdn.staticfile.org/element-plus/2.3.14/index.full.min.js',
+                        path: 'https://cdn.staticfile.net/element-plus/2.3.14/index.full.min.js',
                         css: [
-                            'https://cdn.staticfile.org/element-plus/2.3.14/index.css',
+                            'https://cdn.staticfile.net/element-plus/2.3.14/index.css',
                             'https://registry.npmmirror.com/element-plus/2.3.14/files/theme-chalk/dark/css-vars.css'
                         ]
                     },
                     {
                         name: 'element-plus/dist/locale/zh-cn.min.mjs',
                         var: 'ElementPlusLocaleZhCn',
-                        path: 'https://cdn.staticfile.org/element-plus/2.3.14/locale/zh-cn.min.js'
+                        path: 'https://cdn.staticfile.net/element-plus/2.3.14/locale/zh-cn.min.js'
                     },
 
                     // vxe-table组件库
                     {
                         name: 'xe-utils',
                         var: 'XEUtils',
-                        path: 'https://registry.npmmirror.com/xe-utils/3.5.13/files/dist/xe-utils.umd.min.js'
+                        path: 'https://unpkg.shop.jd.com/xe-utils@3.5.13/dist/xe-utils.umd.min.js'
                     },
                     {
                         name: 'vxe-table',
                         var: 'VXETable',
-                        path: 'https://registry.npmmirror.com/vxe-table/4.5.12/files/lib/index.umd.min.js',
-                        css: ['https://registry.npmmirror.com/vxe-table/4.5.12/files/lib/style.css']
+                        path: 'https://unpkg.shop.jd.com/vxe-table@4.5.12/lib/index.umd.min.js',
+                        css: ['https://unpkg.shop.jd.com/vxe-table@4.5.12/lib/style.css']
                     },
 
                     // canvas-nest.js
                     {
                         name: 'canvas-nest.js',
                         var: 'CanvasNest',
-                        path: 'https://registry.npmmirror.com/canvas-nest.js/2.0.4/files/dist/canvas-nest.umd.js'
+                        path: 'https://cdn.staticfile.net/canvas-nest.js/2.0.4/canvas-nest.umd.js'
                     }
                 ]
             }),
