@@ -36,6 +36,7 @@ service.setResponseErrorInterceptor(async (response, options) => {
     }
     const { pathname } = new URL(response.url);
     if (pathname === refreshURL) {
+        storage.remove('token');
         throw new Error(response.statusText);
     }
     // 刷新token
