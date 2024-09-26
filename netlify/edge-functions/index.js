@@ -1,5 +1,5 @@
-import { Hono } from 'https://deno.land/x/hono/mod.ts'
-import { handle } from 'https://deno.land/x/hono/adapter/netlify/mod.ts'
+import { Hono } from 'jsr:@hono/hono';
+import { handle } from 'jsr:@hono/hono/netlify';
 import dispatcher from '../../dispatcher/dispatcher.js';
 
 const app = new Hono();
