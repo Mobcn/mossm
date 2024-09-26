@@ -1,0 +1,4 @@
+[[edge_functions]]
+  function = "index"
+  path = "/*"
+  excludedPath = ["/assets/*", "/img/*", "/setting/*", "/favicon.ico", "/index.html", "/"]
