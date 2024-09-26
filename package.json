@@ -12,7 +12,7 @@
     "canvas-nest.js": "^2.0.4",
     "element-plus": "^2.3.14",
     "localforage": "^1.10.0",
-    "vue": "^3.3.4",
+    "vue": "^3.4.38",
     "vxe-table": "^4.5.12",
     "xe-utils": "^3.5.13"
   },

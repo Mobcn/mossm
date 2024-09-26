@@ -22,17 +22,13 @@ export default defineConfig(({ mode }) => {
             proxy[key] = {
                 target: value,
                 changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, '')
+                // rewrite: (path) => path.replace(/^\/api/, '')
             };
         });
     }
     return {
         plugins: [
-            vue({
-                script: {
-                    defineModel: true
-                }
-            }),
+            vue(),
             createStyleImportPlugin({
                 resolves: [VxeTableResolve()]
             }),
@@ -50,7 +46,7 @@ export default defineConfig(({ mode }) => {
                     {
                         name: 'vue',
                         var: 'Vue',
-                        path: `https://cdn.staticfile.net/vue/3.3.4/vue.global.prod.min.js`,
+                        path: `https://cdn.staticfile.net/vue/3.4.38/vue.global.prod.min.js`,
                         css: [
                             // Normalize 样式重置
                             'https://cdn.staticfile.net/normalize/8.0.1/normalize.min.css'
@@ -117,7 +113,7 @@ export default defineConfig(({ mode }) => {
         },
         base: './',
         build: {
-            outDir: './server'
+            outDir: './dist'
         },
         define: {
             'process.env': { VUE_APP_ENV: mode }

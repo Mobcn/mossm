@@ -6,7 +6,7 @@ const refreshURL = '/mossm/login';
 
 // 创建一个fetch服务实例
 const service = FetchService.create({
-    baseURL: new URL(location.href).origin,
+    baseURL: 'http://localhost:3300',
     timeout: 10000
 });
 
