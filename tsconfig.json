@@ -19,6 +19,7 @@
     ],
     "skipLibCheck": true,
     "noImplicitThis": false,
+    "noImplicitAny": false,
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
