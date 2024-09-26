@@ -17,7 +17,7 @@ export default VHandler.buildPOST(
             throw new Error('缺少环境变量`JWT_SECRET_KEY`');
         }
         let resultToken;
-        const authorization = context.header('authorization');
+        const authorization = context.header('Authorization');
         let token;
         if (authorization?.startsWith('Bearer ')) {
             token = authorization.replace('Bearer ', '');
@@ -37,10 +37,10 @@ export default VHandler.buildPOST(
         }
         if (!resultToken) {
             if (!username) {
-                throw new Error('用户名不能为空!');
+                return Result.error({ code: 415, message: '用户名不能为空!' });
             }
             if (!password) {
-                throw new Error('密码不能为空!');
+                return Result.error({ code: 415, message: '密码不能为空!' });
             }
             const name = (await SettingModel.findOne({ key: 'username' }).exec()) || null;
             // 初次使用设置用户名和密码
@@ -52,7 +52,7 @@ export default VHandler.buildPOST(
             }
             const pass = (await SettingModel.findOne({ key: 'password' }).exec()) || null;
             if (username !== name.value || password !== pass.value) {
-                throw new Error('用户名或密码错误!');
+                return Result.error({ code: 415, message: '用户名或密码错误!' });
             }
             resultToken = JWT.sign({}, JWT_SECRET_KEY);
         }

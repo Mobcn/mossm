@@ -120,7 +120,7 @@ class VHandler {
         let authorizedCheck = () => true;
         if (setting?.secretKey) {
             authorizedCheck = (params, context) => {
-                const authorization = context.req.header('authorization');
+                const authorization = context.req.header('Authorization');
                 if (!authorization?.startsWith('Bearer ')) {
                     return false;
                 }
@@ -146,10 +146,14 @@ class VHandler {
             let innerParams = {};
             let bodyParams = null;
             if (['POST', 'PUT'].includes(reqMethod.toUpperCase())) {
-                if (context.req.header('Content-Type')?.startsWith('application/json')) {
-                    bodyParams = await context.req.json();
-                } else {
-                    bodyParams = await context.req.parseBody();
+                try {
+                    if (context.req.header('Content-Type')?.startsWith('application/json')) {
+                        bodyParams = await context.req.json();
+                    } else {
+                        bodyParams = await context.req.parseBody();
+                    }
+                } catch (err) {
+                    bodyParams = {};
                 }
             }
             const params = new Proxy(
@@ -188,7 +192,7 @@ class VHandler {
                 })
                 .catch((error) => {
                     context.header('Content-Type', 'application/json;charset=UTF-8');
-                    return context.json(Result.error({ message: error.stack }));
+                    return context.json(Result.error({ message: error.stack }), 500);
                 });
         };
     }
