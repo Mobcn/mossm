@@ -1,5 +1,5 @@
 {
-    "onigasmWASM": "https://registry.npmmirror.com/onigasm/2.2.5/files/lib/onigasm.wasm",
+    "onigasmWASM": "https://npm.onmicrosoft.cn/onigasm@2.2.5/lib/onigasm.wasm",
     "path": "https://raw.gitmirror.com/microsoft/vscode/main/extensions",
     "sources": [
         {
