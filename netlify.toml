@@ -1,3 +1,4 @@
 [[edge_functions]]
   function = "index"
-  path = "/mossm/*"
+  path = "/*"
+  excludedPath = ["/assets/*", "/img/*", "/setting/*", "/favicon.ico"]
