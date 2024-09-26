@@ -1,0 +1,4 @@
+[[edge_functions]]
+  function = "index"
+  pattern = "/(.+)/*"
+  excludedPattern = "/(assets|img|setting)/*"
