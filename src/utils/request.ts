@@ -24,6 +24,11 @@ service.addRequestInterceptor(async (_url, options) => {
 service.addResponseInterceptor((responseData) => {
     const { code, message, data } = responseData.data;
     if (code !== 0) {
+        const { pathname } = new URL(responseData.url);
+        if (pathname === refreshURL) {
+            storage.remove('token');
+            window.location.href = '/';
+        }
         throw new Error(message);
     }
     return data;

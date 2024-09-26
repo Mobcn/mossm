@@ -191,7 +191,7 @@ export default class FetchService {
         } else {
             data = await response.text();
         }
-        const result = { ...response, data };
+        const result = Object.assign(response, { data });
         await this.runResponseInterceptors(result);
         return result.data;
     }
