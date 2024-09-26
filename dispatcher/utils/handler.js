@@ -182,6 +182,9 @@ class VHandler {
             }
             return Promise.resolve(controller(params, context))
                 .then((result) => {
+                    if (result instanceof Response) {
+                        return result;
+                    }
                     context.status(200);
                     context.header('Content-Type', 'application/json;charset=UTF-8');
                     if (typeof result === 'object') {
